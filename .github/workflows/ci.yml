@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Pinned, not "stable": forge fmt's output and the compiler toolchain must not change under
+      # an unchanged tree.
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+
+      - name: Format
+        run: forge fmt --check src test script test-vault-reference
+
+      - name: Build
+        run: forge build
+
+      # EIP-170. A contract can pass every test and still be undeployable.
+      - name: Contract sizes
+        run: ./script/check-sizes.sh
+
+      # test/public only (foundry.toml). test-vault-reference/ needs the closed Vault sources.
+      - name: Test
+        run: forge test -vv

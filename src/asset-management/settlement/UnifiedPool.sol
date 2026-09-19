@@ -14,11 +14,11 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 /// @title UnifiedPool
-/// @notice Per-Vault USDT receivable ledger and real-cash pool (net settlement conversion,
-///         development-plan §8). `pending[vault]` is an application-level receivable that a
+/// @notice Per-Vault USDT receivable ledger and real-cash pool.
+///         `pending[vault]` is an application-level receivable that a
 ///         Vault counts in full toward its NAV, so every path that removes cash from this pool
-///         removes the matching ledger entry with it — `distribute` and, since 审计反馈
-///         2026-08-17 #2, the operator transfers too. The pool therefore holds
+///         removes the matching ledger entry with it — `distribute` and
+///         the operator transfers alike. The pool therefore holds
 ///         `totalPending + unattributedInterest + unattributedPrincipal` at all times, and the
 ///         cash bounds in `distribute`/`availableToDistribute` are defence in depth rather than
 ///         the load-bearing check they once were. No fee computation (BaseVault charges
@@ -40,33 +40,32 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     mapping(address vault => uint256) public override pending;
     uint256 public override totalPending;
 
-    /// @notice Deposited but not yet attributed to any specific Vault's pending (SET-06: a payer
+    /// @notice Deposited but not yet attributed to any specific Vault's pending (a payer
     ///         no longer fixes Vault attribution at deposit time — that Vault's own Settlement
     ///         Operator decides later, via attributeInterest/attributePrincipal).
     uint256 public override unattributedInterest;
     uint256 public override unattributedPrincipal;
 
-    // Tranche classification was removed on 2026-08-25: attribution, distribution and every
+    // Tranche classification was removed: attribution, distribution and every
     // authorisation here key on the vault address alone, so Cash/Note/LP never participated in
     // any calculation — it only risked mis-registering a vault and boxed products into three
     // shapes the protocol does not actually require. Product type is now carried by product
-    // params / Indexer / front-end metadata instead (合约修复20260825 §1).
+    // params / Indexer / front-end metadata instead.
     //
     // The three mappings they occupied are deleted outright rather than kept as placeholders:
-    // nothing is live yet (testnet only) and this pool is redeployed fresh with the rest of this
-    // release, so there is no existing proxy storage layout to preserve. `__gap` below grows by
-    // the same three slots to keep the contract's reserved footprint unchanged for future
-    // upgrades from this deployment onward.
+    // no production proxy uses the earlier layout, so there is no existing storage layout to
+    // preserve. `__gap` below grows by the same three slots to keep the contract's reserved
+    // footprint unchanged for future upgrades.
     mapping(address => bool) public override vaultConfigured;
     mapping(address => bool) public override vaultActive;
 
-    /// @notice Governor admission control (审计反馈 V3 #1/#2). `vaultConfigured`/`vaultActive`
+    /// @notice Governor admission control. `vaultConfigured`/`vaultActive`
     ///         above are set by each Vault's own Owner and say only "this Vault wants to use the
     ///         pool"; these two say "the protocol permits it to". `VaultFactory.deployVault`
     ///         stays permissionless — being built from the standard contracts is not an
     ///         endorsement and must not by itself confer access to the shared cash of every other
     ///         Vault. The Settlement whitelist holds several addresses at once so different
-    ///         Settlement implementations and version migrations coexist (审计问题 1/2 回复 §3.1).
+    ///         Settlement implementations and version migrations coexist.
     mapping(address => bool) public override vaultWhitelisted;
     mapping(address => bool) public override settlementWhitelisted;
 
@@ -117,8 +116,8 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     }
 
     /// @notice One-shot correction re-pointing `sm` at the real StateManager.
-    /// @dev The W3 deploy script initializes this proxy during the W1/W2 stage, when only the
-    ///      `StubStateManager` scaffold exists. That stub registers no vaults, so
+    /// @dev A proxy initialized while only the `StubStateManager` scaffold exists is bound to
+    ///      that stub. The stub registers no vaults, so
     ///      `receiveVaultPrincipal` — and therefore `BaseVault.returnPrincipalToPool` — reverts
     ///      `UnregisteredVault` forever. `sm` has no setter and `initialize` cannot re-run, so
     ///      the correction ships as a `reinitializer(2)` delivered via `upgradeToAndCall`.
@@ -145,7 +144,7 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     ///      `settlement == the real Settlement`, register it here, appoint themselves its
     ///      Settlement Operator, and drain the shared cash pool that backs every real vault.
     ///      StateManager's registry — written only by the one wired VaultFactory — is the
-    ///      authority (审计反馈 2026-08-17 #1).
+    ///      authority.
     function _onlyRegisteredVault(address vault) internal view {
         if (!sm.registeredVaults(vault)) revert UnregisteredVault(vault);
     }
@@ -165,7 +164,7 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     ///      it. Both halves matter: the Vault must be approved, and the Settlement it currently
     ///      points at must be trusted — a Vault may re-point `settlement()` at any time, so
     ///      checking the Vault alone would let an approved Vault swap in an attacker-controlled
-    ///      Settlement and appoint arbitrary Operators (审计问题 1/2 回复 §3.3).
+    ///      Settlement and appoint arbitrary Operators.
     function _requireApproved(address vault) internal view {
         if (!vaultWhitelisted[vault]) revert VaultNotWhitelisted(vault);
         address settlement_ = IBaseVault(vault).settlement();
@@ -313,14 +312,13 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     ///      USDT balance. `operatorTransfer` moving cash into an authorised third-party or RWA
     ///      position changes the FORM of those assets without extinguishing the claim, which is
     ///      why it does not debit the ledger; a cash balance below `totalPending` is expected
-    ///      liquidity waiting, not overstated NAV (审计报告（一）回复 §1).
+    ///      liquidity waiting, not overstated NAV.
     ///
     ///      That leaves one gap, and this closes it: before now `distribute` was the only path
     ///      that could ever reduce `pending`, so a permanent loss on an external position had no
     ///      way to reach the ledger, and `BaseVault.grossManagedAssets()` — which counts
     ///      `pending` in full — would carry the lost value indefinitely. Impairment is recognised
-    ///      here explicitly, on confirmation that the investment is unrecoverable
-    ///      (审计报告一反馈 §1).
+    ///      here explicitly, on confirmation that the investment is unrecoverable.
     ///
     ///      Access: that Vault's own VaultTimelock, mirroring `BaseVault.writeDownInsolvency` —
     ///      recognising a loss is a governance act, not an operator one, and it is delay-queued.
@@ -367,12 +365,12 @@ contract UnifiedPool is IUnifiedPool, Initializable, UUPSUpgradeable {
     // Governor third-party transfers
     // -----------------------------------------------------------------------
     //
-    // Both functions below moved from "that Vault's Settlement Operator" to GOVERNOR_ROLE on
-    // 审计反馈 V3 #1. They are the only paths that move cash out of the pool without a matching
+    // Both functions below are gated on GOVERNOR_ROLE, not on "that Vault's Settlement
+    // Operator". They are the only paths that move cash out of the pool without a matching
     // ledger movement, so whoever can call them can drain the shared pool that backs every
     // Vault; an Operator key is an online signing key held per Vault, and a stolen one must not
     // reach that. The Settlement Operator keeps attribution, settlement signing and the normal
-    // settlement flow — everything that stays inside the ledger (审计问题 1/2 回复 §3.5).
+    // settlement flow — everything that stays inside the ledger.
     //
     // `vault` is kept in the signature and the event: these transfers are still booked against a
     // specific Vault's position for off-chain reconciliation, it is just no longer the thing that

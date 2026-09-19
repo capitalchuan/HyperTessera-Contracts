@@ -2,10 +2,10 @@
 pragma solidity 0.8.24;
 
 /// @title IClaimRegistry
-/// @notice Phase 1 scope: pure on-chain record of vault requests that went unclaimed past their
+/// @notice Pure on-chain record of vault requests that went unclaimed past their
 ///         maturity grace period — `recordClaim`/`getClaim`/`getClaimsByVault` only. No
-///         PENDING→APPROVED→PAID state machine, off-chain KYC gate, or payout path; those are
-///         Phase 2 (development-plan §4.2). Recording does not move funds — it is a bookkeeping
+///         PENDING→APPROVED→PAID state machine, off-chain KYC gate, or payout path.
+///         Recording does not move funds — it is a bookkeeping
 ///         entry for whichever off-chain/Keeper process sweeps unclaimed positions after grace
 ///         period expiry.
 interface IClaimRegistry {

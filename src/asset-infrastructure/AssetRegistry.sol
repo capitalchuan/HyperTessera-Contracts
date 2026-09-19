@@ -16,8 +16,7 @@ import {CreationFeeAction, FeePaymentKind} from "../libs/Types.sol";
 ///         for MintBurnController purposes). Each registration deploys a dedicated RWAToken ERC-20
 ///         and registers the token with MintBurnController in the same transaction. Fully
 ///         decoupled from HyperAccessControl / StateManager / Vault registration — asset-local
-///         authority lives entirely on this Registry. (development-plan §3.2.1, revised
-///         2026-06-22/25; 角色权限与职责修改方案 §11.1, §11.2)
+///         authority lives entirely on this Registry.
 contract AssetRegistry is IAssetRegistry {
     using SafeERC20 for IERC20;
 

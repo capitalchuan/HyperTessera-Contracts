@@ -6,7 +6,6 @@ pragma solidity 0.8.24;
 ///         Records are keyed by assetId and indexed within each asset. Publishing rights are
 ///         asset-local: that asset's AssetRegistry owner, or a Proof Publisher address they
 ///         designate — no protocol-global DATA_PROVIDER_ROLE.
-///         (development-plan §3.2.1; 角色权限与职责修改方案 §11.5)
 interface IPoRRegistry {
     // -----------------------------------------------------------------------
     // Types

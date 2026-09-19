@@ -12,7 +12,7 @@ import {FeePaymentKind} from "../../src/libs/Types.sol";
 
 /// @title RWAToken Tests
 /// @notice Suite for the per-assetId ERC-20 RWAToken with transfer path restriction.
-///         (development-plan §3.2.1). Authority for compliance actions is now this asset's
+///         Authority for compliance actions is now this asset's
 ///         AssetRegistry owner (the "Issuer") rather than a global COMPLIANCE_ROLE, and the
 ///         MintBurnController is fixed immutably at construction rather than set later.
 contract RWATokenTest is Test {

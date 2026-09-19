@@ -6,7 +6,7 @@ import {QueueType} from "../libs/Types.sol";
 /// @title IQueue
 /// @notice On-chain FIFO validation anchor for deposit and redeem requests.
 ///         Maintains per-vault, per-QueueType FIFO queues. Clearing math is computed
-///         off-chain. (development-plan §3.2.1, §8 — net settlement conversion)
+///         off-chain.
 interface IQueue {
     // -----------------------------------------------------------------------
     // Types

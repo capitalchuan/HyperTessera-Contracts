@@ -14,8 +14,6 @@ import {IHyperAccessControl} from "../../interfaces/IHyperAccessControl.sol";
 ///         synchronous ERC-4626 deposit surface and returns resulting shares directly to
 ///         `fromVault`. Does NOT custody shares.
 ///         Access: `fromVault`'s own Allocator, or `fromVault` itself.
-///         (development-plan §3.3.1 — LiquidityBridge [REDESIGNED 2026-07-01]; 角色权限与职责修改
-///         方案 §12.4 A-05)
 contract LiquidityBridge is ILiquidityBridge {
     using SafeERC20 for IERC20;
 
@@ -31,9 +29,9 @@ contract LiquidityBridge is ILiquidityBridge {
     /// @notice Protocol-global role registry; source of GOVERNOR_ROLE for the whitelist below.
     IHyperAccessControl public immutable ac;
 
-    /// @notice Governor admission control for the bridge (审计反馈 V4 #2). `registeredVaults` only
+    /// @notice Governor admission control for the bridge. `registeredVaults` only
     ///         says an address was built by the wired VaultFactory, and `deployVault` is
-    ///         permissionless by design (审计反馈 V3 #1/#2) — so registration is not trust, and
+    ///         permissionless by design — so registration is not trust, and
     ///         anyone could stand up their own Vault, pass the `fromVault` self-call check, and
     ///         mint shares synchronously inside a real `toVault`, bypassing the async
     ///         `requestDeposit` flow entirely. Both ends must be named here by a Governor: the
@@ -83,9 +81,9 @@ contract LiquidityBridge is ILiquidityBridge {
         // off `fromVault` itself, so without this an attacker supplies a contract they control as
         // `fromVault`, passes the self-call check trivially, and reaches
         // `IEarnVault(toVault).deposit` — minting shares in a real vault synchronously, outside
-        // the async request flow entirely (Audit Feedback V2 #3, and the entry point behind #5).
+        // the async request flow entirely.
         // Registration alone does not close that: `deployVault` is permissionless, so the
-        // attacker's own Vault is registered too (审计反馈 V4 #2). The registry check is kept
+        // attacker's own Vault is registered too. The registry check is kept
         // alongside as the cheaper, factually narrower statement of the same invariant.
         if (!sm.registeredVaults(fromVault)) revert UnregisteredVault(fromVault);
         if (!sm.registeredVaults(toVault)) revert UnregisteredVault(toVault);

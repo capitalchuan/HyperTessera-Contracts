@@ -4,7 +4,6 @@ pragma solidity 0.8.24;
 /// @title ILiquidityBridge
 /// @notice Stateless bridge that deposits USDT from one vault into another ERC-4626 vault
 ///         using the synchronous deposit surface and forwards resulting shares to fromVault.
-///         (development-plan §3.3.1 — LiquidityBridge)
 interface ILiquidityBridge {
     // -----------------------------------------------------------------------
     // Events
@@ -33,7 +32,7 @@ interface ILiquidityBridge {
 
     /// @notice Governor admission control: names a Vault as permitted on either end of a bridge.
     /// @dev    Required in addition to StateManager registration — `deployVault` is
-    ///         permissionless, so being registered is not a statement of trust (审计反馈 V4 #2).
+    ///         permissionless, so being registered is not a statement of trust.
     function setBridgeWhitelisted(address vault, bool allowed) external;
 
     /// @notice Whether `vault` is permitted to bridge (either end).

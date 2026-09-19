@@ -67,7 +67,7 @@ contract ClaimRegistryTest is Test {
     }
 
     /// @dev StateManager is a constructor immutable — there is no runtime configuration role and
-    ///      therefore no post-deploy rebinding path at all (角色权限与职责修改方案 G-08).
+    ///      therefore no post-deploy rebinding path at all.
     function test_stateManager_isFixedAtConstruction() public view {
         assertEq(address(registry.stateManager()), address(sm));
     }

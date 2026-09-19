@@ -11,12 +11,12 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title BaseAdapter
-/// @notice Vault's execution + position-ledger + valuation module (development-plan §3.4.1).
+/// @notice Vault's execution + position-ledger + valuation module.
 ///         Standard OZ ERC-4626 for capital sourcing from the Vault; a Curator/Allocator order
 ///         book for buy and sell; off-chain-fed valuation via `realAssets()` (virtual).
 ///
-///         The Sell Order here is the protocol's ONE asset-exit path, shared by every Adapter
-///         (2026-08-28). It carries the counterparty payment, the reservation bookkeeping, the
+///         The Sell Order here is the protocol's ONE asset-exit path, shared by every Adapter.
+///         It carries the counterparty payment, the reservation bookkeeping, the
 ///         refund rules and the Deal retirement; a subclass supplies only which tokens it will
 ///         part with and how to move them, through `_validateExitAsset`/`_deliverExitAsset`.
 ///         BaseAdapter itself will not release any token — a subclass that stays silent can only
@@ -40,8 +40,8 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
     uint256 public nextSellOrderId;
 
     /// @notice Live deal ledger. The key is the Buy order id: with the Rebalance book gone
-    ///         (2026-08-28) there is only one id sequence writing here, so the disjoint-keyspace
-    ///         offset Audit Feedback V2 #2 introduced is no longer needed to keep two books from
+    ///         there is only one id sequence writing here, so the disjoint-keyspace
+    ///         offset used before is no longer needed to keep two books from
     ///         colliding. Sell Orders reduce entries but never create them, so the lifecycle is
     ///         now simply: Buy creates a Deal -> it is valued -> Sell reduces or closes it.
     mapping(uint256 dealKey => DealData) public pendingDeposits;
@@ -127,7 +127,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
     /// @dev Direct Curator call while this Adapter's Vault is CONFIGURING (initial setup);
     ///      VaultTimelock-only afterward — matches the pattern used for BaseVault's other
     ///      Curator-class parameters (staleness window / data provider are both Curator-class
-    ///      Timelock operations per 角色权限与职责修改方案 §6.4).
+    ///      Timelock operations).
     function _onlyCuratorDirectOrTimelock() internal view {
         address sm = IVaultRoles(vault).stateManager();
         bool isConfiguring = IStateManager(sm).getProductState(vault) == ProductState.CONFIGURING;
@@ -142,8 +142,8 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
         if (IVaultRoles(vault).guardian() != msg.sender) revert NotGuardian();
     }
 
-    /// @dev Locked proceeds are off limits to deployment exactly as they are to `_withdraw`
-    ///      (审计反馈 V4 #3). While a Sell Order sits FUNDED this Adapter holds both the position
+    /// @dev Locked proceeds are off limits to deployment exactly as they are to `_withdraw`.
+    ///      While a Sell Order sits FUNDED this Adapter holds both the position
     ///      being sold and the buyer's money for it; spending that money on a Buy Order would
     ///      both double-count it and break the "paid before delivered" custody promise the
     ///      counterparty funded against. The ceiling is the free balance, not the whole balance.
@@ -181,8 +181,8 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
     }
 
     /// @dev The share surface is the Vault's capital line into this Adapter, not a public
-    ///      product — every one of the four ERC-4626 entry points is closed to everyone else
-    ///      (审计反馈 V4 #1). Left open, an outsider could mint shares priced off `realAssets()`
+    ///      product — every one of the four ERC-4626 entry points is closed to everyone else.
+    ///      Left open, an outsider could mint shares priced off `realAssets()`
     ///      and redeem them after a deal is revalued upward, taking value that belongs to the
     ///      Vault's own depositors; and a single un-redeemed outside share keeps `realAssets()`
     ///      above zero, which `BaseVault.removeAdapter` requires to be zero — one dust deposit in
@@ -392,7 +392,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
 
     // -----------------------------------------------------------------------
     // Emergency freeze — Guardian can halt Allocator execution without cancelling every
-    // individually pending order (development-plan §3.1.1 GUARDIAN_ROLE "freeze Allocator").
+    // individually pending order (GUARDIAN_ROLE "freeze Allocator").
     // -----------------------------------------------------------------------
 
     /// @inheritdoc IAdapter
@@ -455,8 +455,8 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
             // order's creation and its execution, and that retirement is a fact — the position is
             // priced off the delivered token balance from then on, so there is simply nothing left
             // to write off here. A checked subtraction would underflow and strand a Sell Order
-            // whose counterparty has already paid, with no way out but expiry and refund
-            // (审计反馈 V4 #4). `updateDealData` is the other writer and is guarded at source.
+            // whose counterparty has already paid, with no way out but expiry and refund.
+            // `updateDealData` is the other writer and is guarded at source.
             uint256 applied = d.dealValue < o.dealValueReduction ? d.dealValue : o.dealValueReduction;
             uint256 newValue = d.dealValue - applied;
             d.dealValue = newValue;
@@ -503,8 +503,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
 
     /// @dev `BaseVault.recallAdapter` withdraws through ERC-4626, so without this the Vault could
     ///      pull out cash a counterparty has paid for an exit that has not happened yet. Locked
-    ///      proceeds are off limits until `executeSell` delivers or a refund returns them
-    ///      (Adapter 方案 §八).
+    ///      proceeds are off limits until `executeSell` delivers or a refund returns them.
     ///
     ///      The inherited `maxWithdraw` ceiling does not subsume this. That one is share value —
     ///      `convertToAssets(balanceOf(owner))`, driven by `totalAssets()` — whereas this is
@@ -565,8 +564,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
         // Proceeds locked against a FUNDED Sell Order are not counted: until the exit asset is
         // delivered this Adapter holds both the original position and the payment for it, and
         // counting both would value the same economic thing twice. The original position keeps
-        // its valuation; the payment starts counting the moment `executeSell` retires it
-        // (Adapter 方案 §八).
+        // its valuation; the payment starts counting the moment `executeSell` retires it.
         uint256 balance = IERC20(asset()).balanceOf(address(this));
         uint256 locked = lockedProceeds;
         uint256 sum = balance > locked ? balance - locked : 0;
@@ -579,7 +577,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
             // A TOKEN_RETURN deal has no refresh path at all — `updateDealData` rejects it by
             // design, and `clearDealValue` cannot run until the token is actually delivered — so
             // applying the check to it froze `realAssets()`, and with it pricing, settlement and
-            // `removeAdapter`, for any delivery slower than the window (Audit Feedback V2 #6).
+            // `removeAdapter`, for any delivery slower than the window.
             if (
                 _dealSettlementMode(dealKey) == SettlementMode.VALUE_RETURN
                     && block.timestamp - d.updatedAt > d.stalenessWindow
@@ -620,7 +618,7 @@ abstract contract BaseAdapter is ERC4626, IAdapter {
         // its counterparty has been quoted. Revaluing the deal below that promise would either
         // strand the order (nothing left to write off) or, worse, let it settle at the stale
         // higher price and push the markdown onto the Vault. The Data Provider must retire the
-        // order first (审计反馈 V4 #4).
+        // order first.
         uint256 reserved = reservedDealValue[orderId];
         if (newValue < reserved) revert DealValueBelowReserved(orderId, newValue, reserved);
         pendingDeposits[orderId] =

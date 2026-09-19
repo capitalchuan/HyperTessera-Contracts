@@ -8,9 +8,8 @@ import {IVaultRoles} from "./IVaultRoles.sol";
 /// @notice Shared ERC-4626 + ERC-7540 async vault surface. Dynamic pricing
 ///         (totalAssets/totalSupply), Adapter-aggregated assets, Morpho-style performance
 ///         fee, dual deposit/redeem FIFO, and net-settlement `settle()`.
-///         Also implements IVaultRoles — Owner/Curator/Guardian/Allocator/Keeper are Vault-local
-///         (角色权限与职责修改方案 §5), not global HyperAccessControl roles.
-///         (development-plan §3.3.1, §8 — net settlement conversion — BaseVault)
+///         Also implements IVaultRoles — Owner/Curator/Guardian/Allocator/Keeper are Vault-local,
+///         not global HyperAccessControl roles.
 interface IBaseVault is IVaultRoles {
     // -----------------------------------------------------------------------
     // Structs
@@ -25,10 +24,10 @@ interface IBaseVault is IVaultRoles {
     }
 
     /// @notice Read model for a redeem request.
-    /// @dev    Added with 审计反馈 V3 #3: a QUEUED request may now hold a claimable balance, so a
-    ///         front-end can no longer infer "claimable" from the state alone — it needs
+    /// @dev    A QUEUED request may hold a claimable balance, so a
+    ///         front-end cannot infer "claimable" from the state alone — it needs
     ///         `settledAssets > 0` alongside `remainingShares` to show the amount claimable now
-    ///         and the amount still queued (审计问题 3 回复 §四·前端和 Indexer).
+    ///         and the amount still queued.
     struct RedeemRequest {
         address owner;
         uint256 shares; // originally requested; immutable
@@ -59,7 +58,7 @@ interface IBaseVault is IVaultRoles {
 
     /// @notice A partially-filled redeem was paid out while it stays queued for the remainder.
     /// @dev    Emitted alongside `RedeemClaimed`, never instead of it — the request keeps its
-    ///         original FIFO position and may be filled and claimed again (审计反馈 V3 #3). A
+    ///         original FIFO position and may be filled and claimed again. A
     ///         consumer must not read one of these as the whole request being finished.
     event RedeemPartiallyClaimed(
         uint256 indexed requestId, address indexed receiver, uint256 assets, uint256 remainingShares, uint256 timestamp
@@ -68,7 +67,7 @@ interface IBaseVault is IVaultRoles {
     /// @notice A queued redeem took its written-down cash and left the queue after liquidation.
     /// @dev    Emitted alongside `RedeemClaimed`. `sharesReturned` went back to the owner to
     ///         unlock them and clear the request, not because they still carry payout value —
-    ///         `claimFinal` stays disabled after liquidation (审计问题 3 回复 §三.3).
+    ///         `claimFinal` stays disabled after liquidation.
     event RedeemLiquidationExit(
         uint256 indexed requestId, address indexed receiver, uint256 assets, uint256 sharesReturned, uint256 timestamp
     );
@@ -240,12 +239,12 @@ interface IBaseVault is IVaultRoles {
     ///         `remainingShares` and stays claimable for the part already filled.
     /// @dev    Normally restricted to the ACCEPTING window outside SETTLING. Once
     ///         `insolvencyLiquidated` that restriction is dropped: nothing can settle any more,
-    ///         so it would only lock the request in permanently (审计问题 3 回复 §三.4).
+    ///         so it would only lock the request in permanently.
     function cancelRequest(uint256 requestId) external;
 
     /// @notice Pays out everything this redeem has been filled for and not yet claimed.
-    /// @dev    Accepts a fully-filled SETTLED request and a partially-filled QUEUED one alike
-    ///         (审计反馈 V3 #3). A solvent partial claim leaves the request QUEUED in its original
+    /// @dev    Accepts a fully-filled SETTLED request and a partially-filled QUEUED one alike.
+    ///         A solvent partial claim leaves the request QUEUED in its original
     ///         FIFO position, so the same request may be filled and claimed repeatedly; after
     ///         liquidation the payout also releases the queue slot and returns `remainingShares`.
     function claimRedeem(uint256 requestId, address receiver) external returns (uint256 assets);

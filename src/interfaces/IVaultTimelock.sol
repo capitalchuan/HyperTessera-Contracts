@@ -5,7 +5,6 @@ pragma solidity 0.8.24;
 /// @notice Per-Vault delay queue protecting Owner-class and Curator-class parameter changes.
 ///         Replaces the global ProtocolTimelock — the protocol layer no longer runs a Timelock;
 ///         every Vault gets its own instance, bound at deploy time and never rebindable.
-///         (角色权限与职责修改方案 §6)
 interface IVaultTimelock {
     // -----------------------------------------------------------------------
     // Types

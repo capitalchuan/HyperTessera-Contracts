@@ -8,7 +8,7 @@ pragma solidity 0.8.24;
 // Enums
 // ---------------------------------------------------------------------------
 
-/// @notice High-level product lifecycle phases. (development-plan §3.3.1)
+/// @notice High-level product lifecycle phases.
 enum ProductState {
     CONFIGURING, // Initial setup; Curator sets params; before subscription opens
     SUBSCRIBING, // Fundraising window open; investors submit requestDeposit
@@ -20,7 +20,7 @@ enum ProductState {
     CLOSED // Terminal state
 }
 
-/// @notice Per-cycle micro-state. (development-plan §3.3.1)
+/// @notice Per-cycle micro-state.
 enum CycleState {
     ACCEPTING, // Accepting user deposit/redeem requests
     CALCULATING, // Settlement batch being computed; chain waiting
@@ -28,7 +28,7 @@ enum CycleState {
     COMPLETED // Cycle done; rolls over to ACCEPTING
 }
 
-/// @notice Emergency circuit-breaker state. (development-plan §3.3.1)
+/// @notice Emergency circuit-breaker state.
 enum PauseState {
     ACTIVE, // Normal operation
     PAUSED_BY_GUARDIAN, // Immediate halt by Guardian multi-sig
@@ -50,7 +50,7 @@ enum ModuleId {
 /// @notice Bit positions of the vault-local roles in the mask returned by
 ///         `StateManager.vaultsWithRole`. Mirrors the `IVaultRoles` surface: a mask has
 ///         bit `1 << uint8(VaultRole.X)` set when the queried account holds role X on
-///         that vault. (角色权限与职责修改方案 §2, §3)
+///         that vault.
 enum VaultRole {
     OWNER,
     CURATOR,
@@ -87,15 +87,14 @@ struct ProductParams {
 
 /// @notice One request's per-cycle settlement instruction. `settleAmount` is in assets (USDT)
 ///         for a deposit, in shares for a redeem. A request may be settled for less than its
-///         full remaining amount — see BaseVault.settle() (development-plan §8, partial
-///         settlement extension 2026-08-05).
+///         full remaining amount — see BaseVault.settle().
 struct RequestSettlement {
     uint256 requestId;
     uint256 settleAmount;
 }
 
 /// @notice Deposit request lifecycle states. Canonical definition — IBaseVault.sol imports
-///         this rather than re-declaring (see net-settlement conversion, development-plan §8).
+///         this rather than re-declaring.
 enum DepositRequestState {
     NONE, // does not exist
     PENDING, // USDT locked; awaiting settlement
@@ -107,7 +106,7 @@ enum DepositRequestState {
 }
 
 /// @notice Redeem request lifecycle states. Canonical definition — IBaseVault.sol imports
-///         this rather than re-declaring (see net-settlement conversion, development-plan §8).
+///         this rather than re-declaring.
 enum RedeemRequestState {
     NONE, // does not exist
     QUEUED, // shares locked; in FIFO queue

@@ -98,7 +98,7 @@ contract ReservePSM is IReservePSM {
     ) external override {
         // Was permissionless, which let anyone front-run an expected assetId, deploy its wrapped
         // token first and install themselves as its controller — without the assetId even having
-        // to exist in AssetRegistry (Audit Feedback V2 #8).
+        // to exist in AssetRegistry.
         _onlyGovernor();
         AssetConfig storage cfg = assetConfig[assetId];
         if (cfg.wrappedToken != address(0)) revert AssetAlreadyConfigured(assetId);

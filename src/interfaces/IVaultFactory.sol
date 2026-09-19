@@ -6,8 +6,7 @@ import {FeePaymentKind, CreationFeeAction} from "../libs/Types.sol";
 /// @title IVaultFactory
 /// @notice Interface for the VaultFactory that deploys and registers HyperTessera vaults.
 ///         Permissionless — anyone may deploy a Vault; the caller (or `params.owner`, if set)
-///         becomes its Owner. (development-plan §3.3.1 — VaultFactory; 角色权限与职责修改方案 §5,
-///         §12.1 G-56)
+///         becomes its Owner.
 interface IVaultFactory {
     // -----------------------------------------------------------------------
     // Types
@@ -24,7 +23,7 @@ interface IVaultFactory {
         string symbol;
         address usdt;
         address stateManager;
-        address settlement; // address(0) at W3 deploy; wired post-W4
+        address settlement; // address(0) at deploy time; wired later
         address queue;
         address owner; // address(0) => msg.sender becomes Owner
         address liquidityBridge; // address(0) for Note tranche EarnVault

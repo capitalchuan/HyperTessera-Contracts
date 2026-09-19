@@ -3,7 +3,6 @@ pragma solidity 0.8.24;
 
 /// @title IRevenuePool
 /// @notice Protocol fee sink. Authorized sources deposit fees; GOVERNOR sweeps to a recipient.
-///         (development-plan §3.2.1)
 interface IRevenuePool {
     // -----------------------------------------------------------------------
     // Events
@@ -53,10 +52,10 @@ interface IRevenuePool {
     /// @notice Remove an address from the authorized fee-source set. Access: GOVERNOR_ROLE.
     function removeAuthorizedSource(address source) external;
 
-    /// @notice Phase 1 interface reservation only (development-plan §7): records the address of
+    /// @notice Interface reservation only: records the address of
     ///         a future yield-deployment strategy for idle funds. No-op — this contract does not
-    ///         call into `strategy` or move funds to it. Phase 2 implements the actual
-    ///         deploy/recall/currentValue adapter pattern. Access: GOVERNOR_ROLE.
+    ///         call into `strategy` or move funds to it.
+    ///         Access: GOVERNOR_ROLE.
     function setYieldStrategy(address strategy) external;
 
     // -----------------------------------------------------------------------

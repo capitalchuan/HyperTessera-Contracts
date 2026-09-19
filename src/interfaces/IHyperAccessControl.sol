@@ -9,7 +9,6 @@ pragma solidity 0.8.24;
 ///         Agent, Operator, Keeper, Strategy, Data Provider, Compliance) is now a Vault-local or
 ///         Asset-local role stored on the relevant Vault/AssetRegistry entry, not a global
 ///         grantRole/revokeRole grant here.
-///         (角色权限与职责修改方案 §2, §4, HAC-01..04)
 interface IHyperAccessControl {
     // -----------------------------------------------------------------------
     // Role constant getter

@@ -382,7 +382,7 @@ contract BaseAdapterTest is Test {
         adapter.realAssets();
     }
 
-    /// @dev Audit Feedback V2 #6 — a TOKEN_RETURN deal has no refresh path (`updateDealData`
+    /// @dev A TOKEN_RETURN deal has no refresh path (`updateDealData`
     ///      rejects it, `clearDealValue` needs the token delivered), so enforcing staleness on it
     ///      bricked `realAssets()` — and with it pricing, settlement and `removeAdapter` — for any
     ///      delivery slower than the window.
@@ -712,7 +712,7 @@ contract BaseAdapterTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Generic Sell Order (Adapter 通用资产退出及回款订单修改方案)
+    // Generic Sell Order
     //
     // The order this replaces never sold anything: it pulled USDT out of the Allocator's own
     // wallet, so a human role sat in the custody path and had to hold and approve the money;
@@ -1028,7 +1028,7 @@ contract BaseAdapterTest is Test {
     }
 
     /// @notice Locked proceeds must not be recallable to the Vault before the exit has happened --
-    ///         that money is the counterparty's until delivery (Adapter 方案 §八).
+    ///         that money is the counterparty's until delivery.
     /// @dev    The live deal is what makes this bite: it keeps the Adapter's share value at
     ///         1_500e6 while its spendable cash is only 500e6, so the withdrawal clears the
     ///         inherited `maxWithdraw` ceiling and still has to be stopped on liquidity grounds.
@@ -1085,7 +1085,7 @@ contract BaseAdapterTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // 审计反馈 V4 #1 — the ERC-4626 surface is the Vault's capital line, not a public product
+    // The ERC-4626 surface is the Vault's capital line, not a public product
     // -----------------------------------------------------------------------
 
     /// @dev Left open, the four entry points priced off `realAssets()` let an outsider mint before
@@ -1129,7 +1129,7 @@ contract BaseAdapterTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // 审计反馈 V4 #3 — executeBuy may not spend escrowed counterparty money
+    // executeBuy may not spend escrowed counterparty money
     // -----------------------------------------------------------------------
 
     /// @dev While a Sell Order sits FUNDED the Adapter holds both the position being sold and the
@@ -1183,7 +1183,7 @@ contract BaseAdapterTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // 审计反馈 V4 #4 — a funded Sell Order must never be stranded by a deal revaluation
+    // A funded Sell Order must never be stranded by a deal revaluation
     // -----------------------------------------------------------------------
 
     /// @dev `clearDealValue` retires the deal outright; the position is priced off its delivered

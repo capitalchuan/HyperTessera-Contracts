@@ -37,7 +37,7 @@ contract MockUSDT is ERC20 {
 }
 
 /// @title DeployVaultTest
-/// @notice Wiring smoke test for the platform + vault stages (development-plan §3.4.3, §3.4.4).
+/// @notice Wiring smoke test for the platform + vault stages.
 ///         Replicates their logic against a fresh local core deploy, since `DeployPlatform` and
 ///         `DeployVault` are themselves Scripts (env-var driven, not directly forge-testable).
 contract DeployVaultTest is Test {
@@ -155,7 +155,7 @@ contract DeployVaultTest is Test {
         unifiedPool.addVault(cashVault);
         unifiedPool.addVault(noteVault);
         unifiedPool.addVault(lpVault);
-        // Governor admission, as DeployVault does (审计反馈 V3 #1/#2).
+        // Governor admission, as DeployVault does.
         unifiedPool.setVaultWhitelisted(cashVault, true);
         unifiedPool.setVaultWhitelisted(noteVault, true);
         unifiedPool.setVaultWhitelisted(lpVault, true);
@@ -208,7 +208,7 @@ contract DeployVaultTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Wiring smoke test (development-plan §3.4.3)
+    // Wiring smoke test
     // -----------------------------------------------------------------------
 
     function test_vaultsRegisteredInStateManager() public view {
@@ -248,7 +248,7 @@ contract DeployVaultTest is Test {
         assertEq(IBaseVault(lpVault).unifiedPool(), address(unifiedPool));
     }
 
-    /// @notice The v3 testnet generation shipped with UnifiedPool bound to StubStateManager, which
+    /// @notice An earlier deployment shipped with UnifiedPool bound to StubStateManager, which
     ///         registers no vaults — `receiveVaultPrincipal`, and so `returnPrincipalToPool`,
     ///         reverted `UnregisteredVault` on every Vault. This suite built the correct topology
     ///         directly and so could not catch it. Pin the binding, and prove the path end to end.
@@ -272,7 +272,7 @@ contract DeployVaultTest is Test {
     }
 
     function test_kytGate_isZeroAddressOnAllVaults() public view {
-        // BaseVault's `gate` defaults to address(0) (open) — no KYT connection in Phase 1.
+        // BaseVault's `gate` defaults to address(0) (open) — no KYT gate is connected by default.
         (bool ok1, bytes memory ret1) = cashVault.staticcall(abi.encodeWithSignature("gate()"));
         (bool ok2, bytes memory ret2) = noteVault.staticcall(abi.encodeWithSignature("gate()"));
         (bool ok3, bytes memory ret3) = lpVault.staticcall(abi.encodeWithSignature("gate()"));

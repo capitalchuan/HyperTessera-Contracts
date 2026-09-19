@@ -7,7 +7,6 @@ import {IBaseVault} from "./IBaseVault.sol";
 /// @notice EarnVault extensions on top of BaseVault.
 ///         Cash tranche (cycleDuration=7 days) adds a synchronous ERC-4626 deposit for LiquidityBridge.
 ///         Note tranche (cycleDuration=365 days) uses no additional surface.
-///         (development-plan §3.3.1 — EarnVault)
 interface IEarnVault is IBaseVault {
     // -----------------------------------------------------------------------
     // Events (Cash tranche only — harmless on Note tranche)

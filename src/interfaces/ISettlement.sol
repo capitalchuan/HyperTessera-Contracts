@@ -4,7 +4,7 @@ pragma solidity 0.8.24;
 import {RequestSettlement} from "../libs/Types.sol";
 
 /// @title ISettlement
-/// @notice Net-settlement batch execution (development-plan §8): M-of-N signature check, per-vault
+/// @notice Net-settlement batch execution: M-of-N signature check, per-vault
 ///         cycle-state check, and pool-cash conservation. Redeem payouts and share pricing are
 ///         computed entirely on-chain by BaseVault from its own per-cycle price snapshot — there
 ///         is no off-chain-supplied redeemAmounts/navSnapshot and no NAVOracle consistency step.
@@ -13,7 +13,7 @@ import {RequestSettlement} from "../libs/Types.sol";
 ///         Vault's own Owner. A batch should normally cover a single Vault (it may still contain
 ///         that Vault's several deposit/redeem requests); a batch spanning multiple Vaults
 ///         validates each Vault's signature threshold independently against the same submitted
-///         signature list. (角色权限与职责修改方案 §9.1)
+///         signature list.
 interface ISettlement {
     // -----------------------------------------------------------------------
     // Types

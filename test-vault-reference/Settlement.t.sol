@@ -32,7 +32,7 @@ contract MockUSDT is ERC20 {
 }
 
 /// @title SettlementTest
-/// @notice Net-settlement Settlement.sol suite (development-plan §8): M-of-N signatures,
+/// @notice Net-settlement Settlement.sol suite: M-of-N signatures,
 ///         per-vault cycle-state check, and pool-cash conservation (availableToDistribute +
 ///         aggregate batch-vs-actual-cash). No NAVOracle consistency step — BaseVault computes
 ///         its own on-chain settlement price via snapshotSettlementPrice.
@@ -87,13 +87,11 @@ contract SettlementTest is Test {
         vm.startPrank(governor);
         revPool.addAuthorizedSource(address(unifiedPool));
 
-        // Registration first: UnifiedPool now only accepts vaults StateManager knows about
-        // (审计反馈 2026-08-17 #1).
+        // Registration first: UnifiedPool now only accepts vaults StateManager knows about.
         sm.setVaultFactory(governor);
         sm.registerVault(address(vault));
         unifiedPool.addVault(address(vault));
-        // Governor admission to the shared pool, separate from the Vault opting in above
-        // (审计反馈 V3 #1/#2).
+        // Governor admission to the shared pool, separate from the Vault opting in above.
         unifiedPool.setVaultWhitelisted(address(vault), true);
         unifiedPool.setSettlementWhitelisted(address(settlement), true);
         vault.setCurator(governor);
@@ -155,8 +153,7 @@ contract SettlementTest is Test {
 
     /// @dev SETTLING is reached by running the product's FINAL cycle: after maturity the Keeper
     ///      starts one more CALCULATING round and its (possibly empty) batch takes the product
-    ///      OPERATING → SETTLING inside `completeCycle`
-    ///      (一年期产品最终周期结算与产品参数调整说明 §5).
+    ///      OPERATING → SETTLING inside `completeCycle`.
     function _advanceToSettling() internal {
         _advanceToOperating();
         // Cycle 0 lands on CALCULATING; settle its empty batch first to get back to ACCEPTING.
@@ -169,12 +166,12 @@ contract SettlementTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Final cycle (一年期产品最终周期结算与产品参数调整说明)
+    // Final cycle
     // -----------------------------------------------------------------------
 
     /// @dev The final cycle must be settleable with an empty queue — that is the normal case for
     ///      a one-year product whose last cycle has no pending requests — and its batch is what
-    ///      generates the maturity price snapshot and takes the product into SETTLING (§5.4).
+    ///      generates the maturity price snapshot and takes the product into SETTLING.
     function test_finalCycle_emptyBatchSnapshotsPriceAndEntersSettling() public {
         _advanceToOperating();
         _submit(_instruction(ISettlement.Distribution({vault: address(vault), amount: 0})), operator1Pk);
@@ -195,7 +192,7 @@ contract SettlementTest is Test {
 
     /// @dev And the product does not reopen to new requests in between: the cycle returns to
     ///      ACCEPTING in the same transaction that moves the product to SETTLING, where both
-    ///      gates reject (§5.5).
+    ///      gates reject.
     function test_finalCycle_doesNotReopenSubscriptionsOrRedeems() public {
         _advanceToSettling();
 
@@ -215,7 +212,7 @@ contract SettlementTest is Test {
 
     /// @dev The final batch may not accept subscriptions: a deposit settled at maturity would
     ///      mint shares against a price struck on wound-down assets, with nothing left to invest
-    ///      in (最终周期结算及最终兑付补充修改方案 §七.1, §八).
+    ///      in.
     function test_finalBatch_rejectsDepositSettlements() public {
         _advanceToOperating();
         _submit(_instruction(ISettlement.Distribution({vault: address(vault), amount: 0})), operator1Pk);
@@ -492,8 +489,7 @@ contract SettlementTest is Test {
         unifiedPool.attributeInterest(address(vault), 1_000e6);
 
         // A Governor transfer takes 700e6 of cash back out of the pool, so only 300e6 of that
-        // vault's pending is actually distributable (审计反馈 V3 #1 moved this off the Settlement
-        // Operator; the ledger arithmetic is unchanged).
+        // vault's pending is actually distributable.
         vm.prank(governor);
         unifiedPool.operatorTransfer(address(vault), makeAddr("sink"), 700e6, bytes32(0));
 
@@ -573,7 +569,7 @@ contract SettlementTest is Test {
     ///      batch-wide sum spots the shortfall.
     /// @dev `pending` is a claim on pool-MANAGED assets, so an operator transfer moving cash
     ///      into an external position legitimately leaves the pool holding less cash than the
-    ///      ledger totals (审计报告（一）回复 §1). The aggregate guard is what stops a batch whose
+    ///      ledger totals. The aggregate guard is what stops a batch whose
     ///      legs each fit their own vault's pending from collectively exceeding the cash on hand.
     function test_submitBatch_twoVaultsEachFitButBatchExceedsPoolCash_reverts() public {
         EarnVault vault2 = _secondVaultInCalculating();
@@ -712,7 +708,7 @@ contract SettlementTest is Test {
     // equality checks (ConservationFailed / WrongRedeemAmount) that net settlement deletes.
     // test_submitBatch_navDeviationExceedsTolerance_reverts and test_submitBatch_staleNav_reverts
     // were removed — Settlement no longer validates against NAVOracle; BaseVault computes its
-    // own on-chain settlement price via snapshotSettlementPrice (development-plan §8).
+    // own on-chain settlement price via snapshotSettlementPrice.
 
     function test_settle_alreadySettledDeposit_reverts() public {
         uint256 assets = 2_000e6;

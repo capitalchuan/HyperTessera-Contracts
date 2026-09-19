@@ -85,7 +85,7 @@ contract LiquidityBridgeTest is Test {
 
     /// @dev Governor admission to the bridge. Separate from `registerVault` on purpose: the two
     ///      say different things now, and every test that expects a bridge to go through has to
-    ///      make both statements (审计反馈 V4 #2).
+    ///      make both statements.
     function _admit(address vault) internal {
         vm.prank(governor);
         bridge.setBridgeWhitelisted(vault, true);
@@ -100,7 +100,7 @@ contract LiquidityBridgeTest is Test {
         // IVaultRoles(fromVault).allocator(), which reverts against a plain EOA with no code.
         MockAllocatorVault fromVault = new MockAllocatorVault(allocator);
         vm.prank(factory);
-        sm.registerVault(address(fromVault)); // both sides must be protocol-registered (Audit V2 #3)
+        sm.registerVault(address(fromVault)); // both sides must be protocol-registered
         _admit(address(fromVault));
         uint256 assets = 1_000e6;
         usdt.mint(address(fromVault), assets);
@@ -152,7 +152,7 @@ contract LiquidityBridgeTest is Test {
 
         vm.prank(alice);
         // The registration check now fires first: an unregistered `fromVault` is rejected before
-        // the auth question is even asked (Audit Feedback V2 #3).
+        // the auth question is even asked.
         vm.expectRevert(abi.encodeWithSelector(ILiquidityBridge.UnregisteredVault.selector, fromVault));
         bridge.bridgeDeposit(1_000e6, fromVault, address(cashVault));
     }
@@ -160,7 +160,7 @@ contract LiquidityBridgeTest is Test {
     function test_bridgeDeposit_unauthorized_reverts() public {
         MockAllocatorVault fromVault = new MockAllocatorVault(allocator);
         vm.prank(factory);
-        sm.registerVault(address(fromVault)); // both sides must be protocol-registered (Audit V2 #3)
+        sm.registerVault(address(fromVault)); // both sides must be protocol-registered
         _admit(address(fromVault));
         usdt.mint(address(fromVault), 1_000e6);
         vm.prank(address(fromVault));
@@ -184,7 +184,7 @@ contract LiquidityBridgeTest is Test {
     function test_bridgeDeposit_emits_DepositBridged() public {
         MockAllocatorVault fromVault = new MockAllocatorVault(allocator);
         vm.prank(factory);
-        sm.registerVault(address(fromVault)); // both sides must be protocol-registered (Audit V2 #3)
+        sm.registerVault(address(fromVault)); // both sides must be protocol-registered
         _admit(address(fromVault));
         uint256 assets = 1_000e6;
         usdt.mint(address(fromVault), assets);
@@ -212,7 +212,7 @@ contract LiquidityBridgeTest is Test {
     function test_earnVault_sync_deposit_via_bridge_increases_balance() public {
         MockAllocatorVault fromVault = new MockAllocatorVault(allocator);
         vm.prank(factory);
-        sm.registerVault(address(fromVault)); // both sides must be protocol-registered (Audit V2 #3)
+        sm.registerVault(address(fromVault)); // both sides must be protocol-registered
         _admit(address(fromVault));
         uint256 assets = 2_000e6;
         usdt.mint(address(fromVault), assets);
@@ -229,7 +229,7 @@ contract LiquidityBridgeTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // No bridgeRedeem (spec: removed in redesign)
+    // No bridgeRedeem (removed in the redesign)
     // -----------------------------------------------------------------------
 
     /// @dev A raw call to the removed selector must find no implementation. LiquidityBridge has
@@ -250,10 +250,10 @@ contract LiquidityBridgeTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // 审计反馈 V4 #2 — registration is not trust; the bridge needs Governor admission
+    // Registration is not trust; the bridge needs Governor admission
     // -----------------------------------------------------------------------
 
-    /// @dev `deployVault` is permissionless (审计反馈 V3 #1/#2), so an attacker's own Vault is
+    /// @dev `deployVault` is permissionless, so an attacker's own Vault is
     ///      registered with StateManager exactly like a real one. It would then pass the
     ///      `fromVault` self-call check trivially and reach `IEarnVault(toVault).deposit` —
     ///      minting shares synchronously inside a real Vault, outside the async `requestDeposit`

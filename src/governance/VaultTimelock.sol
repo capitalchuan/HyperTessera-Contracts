@@ -11,7 +11,7 @@ import {ProductState} from "../libs/Types.sol";
 /// @notice One instance per Vault, deployed and bound by VaultFactory; never rebindable to a
 ///         different Vault. Delay-queues Owner-class and Curator-class parameter changes behind
 ///         a per-target-and-selector whitelist. Replaces the global ProtocolTimelock: the
-///         protocol layer runs no Timelock of its own. (角色权限与职责修改方案 §6)
+///         protocol layer runs no Timelock of its own.
 contract VaultTimelock is IVaultTimelock {
     // -----------------------------------------------------------------------
     // Delay bounds
@@ -82,7 +82,7 @@ contract VaultTimelock is IVaultTimelock {
 
     /// @param vault_ The Vault this Timelock is permanently bound to.
     /// @dev    Pre-seeds the whitelist for the fixed set of BaseVault/self targets known at deploy
-    ///         time (角色权限与职责修改方案 §6.4). Adapter-specific targets are not known yet at this
+    ///         time. Adapter-specific targets are not known yet at this
     ///         point — the Vault Owner whitelists those directly while the Vault is still
     ///         CONFIGURING (see `setAllowedAction`), mirroring the same direct-during-CONFIGURING /
     ///         Timelock-gated-after pattern used throughout the rest of the Vault's own parameter

@@ -238,7 +238,7 @@ contract StateManagerTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Product-parameter validation (审计反馈 2026-08-17 #8)
+    // Product-parameter validation
     // -----------------------------------------------------------------------
 
     /// @dev A Curator who never called setProductParams must not be able to open a raise: the
@@ -310,8 +310,7 @@ contract StateManagerTest is Test {
         assertEq(sm.getParams(vault).subscriptionCapShare, 0);
     }
 
-    /// @dev The cap is pushed straight into the vault, which is the authority settle() reads
-    ///      (募集上限参数调整建议 §2).
+    /// @dev The cap is pushed straight into the vault, which is the authority settle() reads.
     function test_setProductParams_pushesCapIntoVault() public {
         _registerVault();
         ProductParams memory p = defaultParams;
@@ -404,7 +403,7 @@ contract StateManagerTest is Test {
     // Cycle-0 fix: successful raise goes straight to CALCULATING (not ACCEPTING),
     // blocking new deposit/redeem requests until the bound Settlement contract
     // completes cycle 0, at which point currentCycleNumber becomes 1 and the
-    // vault re-opens to ACCEPTING. This is the client-requested fix for initial
+    // vault re-opens to ACCEPTING. This is the fix for initial
     // subscribers otherwise being stuck waiting a full cycleDuration.
     // -----------------------------------------------------------------------
 
@@ -477,12 +476,12 @@ contract StateManagerTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Final cycle → SETTLING (一年期产品最终周期结算与产品参数调整说明 §5)
+    // Final cycle → SETTLING
     // -----------------------------------------------------------------------
 
     /// @dev maturityTimestamp is its own trigger: the final cycle runs even though only a
     ///      fraction of cycleDuration has elapsed, and starting it moves the product to SETTLING
-    ///      in the same transaction (最终周期结算及最终兑付补充修改方案 §四.1).
+    ///      in the same transaction.
     function test_finalCycle_startsOnMaturityIgnoringCycleDuration() public {
         _fullSubscribeToOperatingAndAccepting();
         vm.warp(NOW + 365 days);
@@ -516,7 +515,7 @@ contract StateManagerTest is Test {
     /// @dev A normal cycle that entered CALCULATING before maturity but completes at or after it
     ///      is NOT promoted to final: it priced the vault while positions were still outstanding.
     ///      The product moves to SETTLING and opens a FRESH final cycle instead, which prices
-    ///      only once the assets are actually back (最终周期结算及最终兑付补充修改方案 §四.2).
+    ///      only once the assets are actually back.
     function test_finalCycle_normalCycleAfterMaturityOpensAFreshFinalCycle() public {
         _fullSubscribeToOperatingAndAccepting();
         vm.warp(NOW + 365 days - 1);
@@ -554,7 +553,7 @@ contract StateManagerTest is Test {
 
     /// @dev Starting the final cycle at maturity is one atomic step: OPERATING → SETTLING and
     ///      ACCEPTING → CALCULATING together, so the product never reads SETTLING with no cycle
-    ///      to run, nor runs a cycle while still admitting business (§四.1).
+    ///      to run, nor runs a cycle while still admitting business.
     function test_finalCycle_startIsAtomicIntoSettlingCalculating() public {
         _fullSubscribeToOperatingAndAccepting();
         vm.warp(NOW + 365 days + 1);
@@ -567,7 +566,7 @@ contract StateManagerTest is Test {
     }
 
     /// @dev Completing the final cycle moves straight to MATURING — SETTLING has exactly one
-    ///      exit and it runs through a completed final cycle (§九).
+    ///      exit and it runs through a completed final cycle.
     function test_finalCycle_completeCycleEntersMaturingAtomically() public {
         _fullSubscribeToSettling();
         vm.prank(settlement);
@@ -865,8 +864,7 @@ contract StateManagerTest is Test {
 
     /// @dev `recordSubscription` only ever accrues while SUBSCRIBING, so releasing outside that
     ///      window would subtract an amount that was never added and drive the raise tally below
-    ///      its true total. An OPERATING-phase cancel is a no-op on the ledger
-    ///      (审计反馈 2026-08-17 #5).
+    ///      its true total. An OPERATING-phase cancel is a no-op on the ledger.
     function test_releaseSubscription_noOpOutsideSubscribing() public {
         _fullSubscribeToOperatingAndAccepting();
         uint256 before = sm.totalSubscribed(vault);
@@ -879,7 +877,7 @@ contract StateManagerTest is Test {
         assertEq(sm.subscribedByWallet(vault, alice), before);
     }
 
-    /// @dev The full lifecycle the client asked to be unified (合约修改20260824): the tally moves
+    /// @dev The full lifecycle: the tally moves
     ///      only during the raise window, in both directions, and is frozen afterwards.
     function test_totalSubscribed_frozenAfterRaiseCloses() public {
         _registerVaultAndParams();
@@ -1117,8 +1115,7 @@ contract StateManagerTest is Test {
     }
 
     /// @dev SETTLING is where the FINAL cycle RUNS: starting it at maturity moves the product
-    ///      into SETTLING and the cycle into CALCULATING in one transaction
-    ///      (最终周期结算及最终兑付补充修改方案 §四.1).
+    ///      into SETTLING and the cycle into CALCULATING in one transaction.
     function _fullSubscribeToSettling() internal {
         _fullSubscribeToOperatingAndAccepting();
         vm.warp(NOW + 365 days + 1);
@@ -1153,8 +1150,7 @@ contract StateManagerTest is Test {
     /// @dev MATURING is reachable only through the final cycle's own completeCycle, which only
     ///      that vault's bound Settlement may call. The separate Keeper transition and the
     ///      separate M-of-N confirmation that used to guard it are both gone — the final batch is
-    ///      already M-of-N protected, so confirming it again was duplicate machinery
-    ///      (最终周期结算及最终兑付补充修改方案 §九).
+    ///      already M-of-N protected, so confirming it again was duplicate machinery.
     function test_maturing_onlyReachableViaFinalCompleteCycle() public {
         _fullSubscribeToSettling();
 

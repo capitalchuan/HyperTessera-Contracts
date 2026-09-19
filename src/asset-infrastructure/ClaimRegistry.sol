@@ -7,17 +7,17 @@ import {IVaultRoles} from "../interfaces/IVaultRoles.sol";
 
 /// @title ClaimRegistry
 /// @notice Append-only on-chain record of vault requests left unclaimed past their maturity
-///         grace period. Phase 1 scope only (development-plan §4.2): recording is bookkeeping,
-///         not payout — it does not read or move any BaseVault/UnifiedPool funds. Phase 2 adds
-///         the PENDING→APPROVED→PAID state machine and the off-chain KYC/payout path.
+///         grace period. Recording is bookkeeping,
+///         not payout — it does not read or move any BaseVault/UnifiedPool funds. There is no
+///         PENDING→APPROVED→PAID state machine or off-chain KYC/payout path here.
 contract ClaimRegistry is IClaimRegistry {
     // -----------------------------------------------------------------------
     // State
     // -----------------------------------------------------------------------
 
     /// @notice StateManager used to validate `recordClaim`'s `vault` argument. Fixed at
-    ///         construction — ClaimRegistry has no runtime configuration role at all
-    ///         (角色权限与职责修改方案 G-08). Deployed after StateManager for this reason.
+    ///         construction — ClaimRegistry has no runtime configuration role at all.
+    ///         Deployed after StateManager for this reason.
     IStateManager public immutable stateManager;
 
     ClaimRecord[] private _claims;

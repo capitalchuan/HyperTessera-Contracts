@@ -22,7 +22,7 @@ contract MockERC20Fee is ERC20 {
 }
 
 /// @title AssetRegistry Tests
-/// @notice Suite for AssetRegistry per development-plan §3.2.1 (revised 2026-06-22/25).
+/// @notice Suite for AssetRegistry.
 /// @dev    registerAsset is permissionless: any address may register an RWA asset; the registrant
 ///         becomes the asset owner. Owner may update metadata, transfer ownership, and deactivate.
 ///         Deactivation is owner-only — the old Governor override was removed.

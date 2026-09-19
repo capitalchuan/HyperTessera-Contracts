@@ -69,7 +69,7 @@ contract HyperAccessControlTest is Test {
     }
 
     function test_grantRole_emitsRoleGranted() public {
-        // §3.1.3: grantRole by GOVERNOR emits RoleGranted (sender = governor).
+        // grantRole by GOVERNOR emits RoleGranted (sender = governor).
         vm.expectEmit(true, true, true, false, address(ac));
         emit IAccessControl.RoleGranted(GOVERNOR_ROLE, newGovernor, governor);
         vm.prank(governor);
@@ -120,7 +120,7 @@ contract HyperAccessControlTest is Test {
         vm.prank(governor);
         ac.grantRole(GOVERNOR_ROLE, newGovernor);
 
-        // §3.1.3: revokeRole by GOVERNOR emits RoleRevoked (sender = governor).
+        // revokeRole by GOVERNOR emits RoleRevoked (sender = governor).
         vm.expectEmit(true, true, true, false, address(ac));
         emit IAccessControl.RoleRevoked(GOVERNOR_ROLE, newGovernor, governor);
         vm.prank(governor);

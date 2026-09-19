@@ -140,8 +140,9 @@ forge test --match-test test_deployProfileRules -vvv
 ## License
 
 - HyperTessera's original code in this repository (`src/`, `test/`, `test-vault-reference/`,
-  `script/`) is licensed under the [PolyForm Shield License 1.0.0](LICENSE). You may use, change
-  and distribute it for any purpose except providing a product that competes with HyperTessera.
+  `script/`) is licensed by HyperTessera Labs Ltd. under the
+  [PolyForm Shield License 1.0.0](LICENSE). You may use, change and distribute it for any purpose
+  except providing a product that competes with HyperTessera.
   Solidity files carry `SPDX-License-Identifier: LicenseRef-PolyForm-Shield-1.0.0`. PolyForm
   Shield is not on the SPDX license list, so the identifier uses the `LicenseRef-` form.
 - Third-party dependencies under `lib/` keep their own licenses: forge-std is MIT or Apache-2.0,

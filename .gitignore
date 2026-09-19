@@ -1,0 +1,14 @@
+# Foundry
+out/
+cache/
+broadcast/
+
+# script/deploy/DeployCore.s.sol output (forge's writeJson needs the directory to exist)
+deployments/*
+!deployments/.gitkeep
+
+# Secrets
+.env
+.env.*
+
+.DS_Store

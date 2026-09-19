@@ -1,0 +1,16 @@
+[profile.default]
+src = "src"
+# Public module tests only. The Vault reference tests in test-vault-reference/ need the closed
+# Vault sources and are outside every compiled directory, so `forge build` never sees them.
+test = "test/public"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+# Same compiler settings as the deployed contracts. via_ir changes bytecode relative to the
+# legacy pipeline, so a build without it will not reproduce deployed code.
+via_ir = true
+# script/deploy/DeployCore.s.sol writes its address book here.
+fs_permissions = [{ access = "read-write", path = "./deployments" }]

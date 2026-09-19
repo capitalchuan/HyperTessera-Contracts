@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # GitHub Actions used by CI.
+  #
+  # forge-std and OpenZeppelin (git submodules under lib/) are deliberately not listed. Dependabot
+  # would move them to the tip of each upstream default branch, but they are pinned to the
+  # versions the contracts were built and deployed with (see foundry.lock) and change only on
+  # purpose.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

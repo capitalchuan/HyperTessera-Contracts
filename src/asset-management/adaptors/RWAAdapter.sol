@@ -11,7 +11,7 @@ import {INAVOracle} from "../../interfaces/INAVOracle.sol";
 /// @title RWAAdapter
 /// @notice BaseAdapter that values its RWA Token balance via a token-keyed NAVOracle price feed.
 ///         Never stores or reads an assetId, never calls AssetRegistry — the RWA Token may be
-///         HyperTessera's own or issued by an external party (NAVOracle/RWAAdapter redesign spec).
+///         HyperTessera's own or issued by an external party.
 contract RWAAdapter is BaseAdapter {
     using SafeERC20 for IERC20;
 
@@ -32,7 +32,7 @@ contract RWAAdapter is BaseAdapter {
     // Exit-asset policy — this Adapter sells its own RWA Token and nothing else
     // -----------------------------------------------------------------------
 
-    /// @dev The standalone RWA Withdraw order book was removed on 2026-08-28 and RWA sales run
+    /// @dev The standalone RWA Withdraw order book was removed and RWA sales run
     ///      through the generic Sell Order instead. It could transfer RWA out with no payment at
     ///      all, which sidestepped the pay-first rule the Sell Order exists to enforce; it left
     ///      two books competing for the same token balance, so the reservation accounting had to
@@ -40,7 +40,7 @@ contract RWAAdapter is BaseAdapter {
     ///      cash and no Deal treatment. Everything it did, the Sell Order does with the payment
     ///      and the position retirement attached. A no-proceeds emergency migration, if it is ever
     ///      needed, belongs in a purpose-built Governance mechanism, not in the ordinary
-    ///      business flow (Adapter 方案 §九).
+    ///      business flow.
     ///
     ///      Narrowing to `rwaToken` is what keeps a Sell Order from being used to move any other
     ///      token this Adapter happens to hold.
@@ -57,8 +57,8 @@ contract RWAAdapter is BaseAdapter {
     /// @dev Tokens already delivered into this Adapter are valued at `balance × price`. The
     ///      in-flight cost of the TOKEN_RETURN orders that delivered them is netted out, so an
     ///      order that has been filled but whose pending entry the Allocator has not yet cleared
-    ///      via `clearDealValue` is never counted twice ("订单成本 + Token 市值 重复计算",
-    ///      NAVOracle/RWAAdapter 修改方案 §6). `clearDealValue` remains the way to retire the
+    ///      via `clearDealValue` is never counted twice.
+    ///      `clearDealValue` remains the way to retire the
     ///      entry for good; this only stops the gap between delivery and clearing from inflating
     ///      NAV. VALUE_RETURN deals are untouched — no balance ever supersedes them.
     function realAssets() public view override returns (uint256) {

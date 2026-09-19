@@ -7,10 +7,9 @@ pragma solidity 0.8.24;
 ///         issuer grant); the Token Agent is appointed by that same owner via `setTokenAgent`.
 ///         4-step flow: Issuer initiates → Token Agent approves → contract checks both callers →
 ///         RWAToken minted/burned. Independent mint and burn nonce sequences.
-///         (development-plan §3.2.1; 角色权限与职责修改方案 §11.3)
 interface IMintBurnController {
     // -----------------------------------------------------------------------
-    // Structs (plan §3.2.1)
+    // Structs
     // -----------------------------------------------------------------------
 
     /// @notice Pending mint request record, keyed by mint nonce.
@@ -32,7 +31,7 @@ interface IMintBurnController {
     }
 
     // -----------------------------------------------------------------------
-    // Events (§3.1.2)
+    // Events
     // -----------------------------------------------------------------------
 
     event MintInitiated(
@@ -90,11 +89,11 @@ interface IMintBurnController {
     function setTokenAgent(uint256 assetId, address agent) external;
 
     // -----------------------------------------------------------------------
-    // State accessors (plan §3.2.1)
+    // State accessors
     // -----------------------------------------------------------------------
 
     /// @notice Called by AssetRegistry after deploying a new RWAToken; registers the token mapping.
-    /// @dev    Access: only the wired AssetRegistry address. (plan §3.2.1, revised 2026-06-25)
+    /// @dev    Access: only the wired AssetRegistry address.
     function registerToken(uint256 assetId, address token) external;
 
     function tokenAgentOf(uint256 assetId) external view returns (address);

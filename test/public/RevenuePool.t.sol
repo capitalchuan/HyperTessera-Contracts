@@ -190,7 +190,7 @@ contract RevenuePoolTest is Test {
     }
 
     function test_withdrawToken_doesNotAffectTotalFeesReceived() public {
-        // Sanity check for the client's "USDT vs Vault Share accounting split" requirement:
+        // Sanity check for the "USDT vs Vault Share accounting split" requirement:
         // sweeping a non-USDT token must never touch totalFeesReceived.
         MockUSDT otherToken = new MockUSDT();
         otherToken.mint(address(pool), 1_000e18);
@@ -213,7 +213,7 @@ contract RevenuePoolTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // setYieldStrategy — Phase 1 interface reservation only (development-plan §7)
+    // setYieldStrategy — interface reservation only
     // -----------------------------------------------------------------------
 
     function test_yieldStrategy_defaultsToZeroAddress() public view {

@@ -12,7 +12,6 @@ import {IHyperAccessControl} from "../interfaces/IHyperAccessControl.sol";
 ///         manage a single RWA Token/PoR/Wrapped Asset, or submit/cancel/execute Vault parameter
 ///         changes — those are Vault-local (VaultTimelock + BaseVault-stored roles) or Asset-local
 ///         (AssetRegistry-stored owner/issuer/token agent/proof publisher) authority now.
-///         (角色权限与职责修改方案 §4, HAC-01..04)
 contract HyperAccessControl is AccessControl, IHyperAccessControl {
     // -----------------------------------------------------------------------
     // Custom errors

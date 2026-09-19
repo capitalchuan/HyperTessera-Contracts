@@ -8,8 +8,7 @@ import {IAssetRegistry} from "../interfaces/IAssetRegistry.sol";
 /// @notice Append-only on-chain ledger for Proof of Reserve documents.
 ///         Each proof is permanently stored; records cannot be modified or deleted.
 ///         Publishing is asset-local — that asset's AssetRegistry owner, or a Proof Publisher
-///         address they designate; anyone may read. (development-plan §3.2.1; 角色权限与职责修改
-///         方案 §11.5)
+///         address they designate; anyone may read.
 contract PoRRegistry is IPoRRegistry {
     // -----------------------------------------------------------------------
     // State

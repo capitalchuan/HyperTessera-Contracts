@@ -2,9 +2,9 @@
 pragma solidity 0.8.24;
 
 /// @title WrappedAsset
-/// @notice Minimal ERC-20 representing a locked HK Note Token position on BNB Chain.
+/// @notice Minimal ERC-20 representing a locked RWA token position.
 ///         Deployed once per assetId by ReservePSM.deployWrappedToken. PSM is the exclusive
-///         minter and burner; all other transfers are unrestricted. (development-plan §3.2.1)
+///         minter and burner; all other transfers are unrestricted.
 contract WrappedAsset {
     // -----------------------------------------------------------------------
     // ERC-20 metadata

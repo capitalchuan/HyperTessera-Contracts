@@ -226,8 +226,7 @@ abstract contract SettlementTokenDecimalsTest is Test {
 
     /// @notice Regression: the high-water mark starts at parity, so a flat first cycle accrues no
     ///         performance fee. Against an 18-decimal token and a 1e6 HWM, the first snapshot read
-    ///         the whole NAV as profit and minted a fee against all of it (Audit Feedback V2 #5 is
-    ///         the same failure from the other direction).
+    ///         the whole NAV as profit and minted a fee against all of it.
     function test_snapshot_flatPrice_accruesNoPerformanceFee() public {
         _enablePerformanceFee(1_000); // 10%
         _giveAliceShares(1_000 * ONE);
@@ -570,7 +569,7 @@ abstract contract SettlementTokenDecimalsTest is Test {
     }
 }
 
-/// @notice 6-decimal settlement token — the shape every earlier generation was tested against.
+/// @notice 6-decimal settlement token — the shape every earlier version was tested against.
 contract SettlementToken6DecimalsTest is SettlementTokenDecimalsTest {
     function _settlementDecimals() internal pure override returns (uint8) {
         return 6;

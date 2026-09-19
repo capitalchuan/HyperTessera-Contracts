@@ -10,12 +10,12 @@ import {IStateManager} from "../../interfaces/IStateManager.sol";
 /// @title LiquidityAdapter
 /// @notice Concrete BaseAdapter for the LP EarnVault. Holds the Curator-configured LP→Cash bridge
 ///         target (`liquidityBridge`/`cashVault`) on top of the inherited Curator/Allocator order
-///         book; the LP Vault performs the actual bridging itself. (development-plan §3.4.1)
+///         book; the LP Vault performs the actual bridging itself.
 ///
 ///         Deliberately declares no exit assets: the LP→Cash bridge is unchanged and is not a Sell
 ///         Order, and this Adapter holds no sellable position of its own. It therefore inherits
 ///         BaseAdapter's refuse-everything policy, so a token-bearing Sell Order cannot be created
-///         against it at all (Adapter 方案 §五). Should it ever hold one, override
+///         against it at all. Should it ever hold one, override
 ///         `_validateExitAsset`/`_deliverExitAsset` for exactly that asset — Deal-only exits
 ///         (`exitAsset == address(0)`) already work today.
 contract LiquidityAdapter is BaseAdapter, ILiquidityAdapter {

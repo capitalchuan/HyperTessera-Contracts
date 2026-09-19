@@ -270,7 +270,7 @@ contract VaultFactoryTest is Test {
     // registerVault propagates NotVaultFactory from StateManager.
     /// @dev An unwired factory now fails one step earlier than it used to: `bindGovernance` is
     ///      itself gated on being the StateManager's registered factory, so the deploy reverts
-    ///      there rather than at `registerVault` (审计反馈 2026-08-17 #9).
+    ///      there rather than at `registerVault`.
     function test_deploy_reverts_if_factory_not_wired_in_stateManager() public {
         StateManager freshSm = new StateManager(address(ac));
         VaultFactory unwiredFactory = _newVaultFactory(address(freshSm));
@@ -319,7 +319,7 @@ contract VaultFactoryTest is Test {
 
     /// @dev The deployer has no say in the initial three-layer state: StateManager pins it to
     ///      CONFIGURING / ACCEPTING / ACTIVE, so the "single-direction from CONFIGURING"
-    ///      invariant cannot be bypassed at registration (审计反馈 2026-08-17 #7).
+    ///      invariant cannot be bypassed at registration.
     function test_deploy_alwaysStartsInConfiguringAccepting() public {
         vm.prank(governor);
         address vault = factory.deployVault(baseEarnParams);

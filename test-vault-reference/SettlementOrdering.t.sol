@@ -116,11 +116,10 @@ contract SettlementOrderingTest is Test {
         // totalAssets unchanged but drains freeVaultUSDT).
         cashVault.setUnifiedPool(address(unifiedPool));
         unifiedPool.addVault(address(cashVault));
-        // Governor admission to the shared pool, separate from the Vault opting in
-        // (审计反馈 V3 #1/#2).
+        // Governor admission to the shared pool, separate from the Vault opting in.
         unifiedPool.setVaultWhitelisted(address(cashVault), true);
         unifiedPool.setSettlementWhitelisted(address(settlement), true);
-        // The same admission, one layer down, for the LP → Cash bridge leg (审计反馈 V4 #2).
+        // The same admission, one layer down, for the LP → Cash bridge leg.
         bridge.setBridgeWhitelisted(address(lpVault), true);
         bridge.setBridgeWhitelisted(address(cashVault), true);
         vm.stopPrank();
@@ -269,14 +268,13 @@ contract SettlementOrderingTest is Test {
 
     function _bridgeIn(uint256 assets) internal returns (uint256 shares) {
         address from = address(this);
-        // Both sides of a bridge must be protocol-registered now (Audit Feedback V2 #3); this
+        // Both sides of a bridge must be protocol-registered now; this
         // test contract stands in as `fromVault`.
         if (!sm.registeredVaults(from)) {
             vm.prank(governor);
             sm.registerVault(from);
         }
-        // ...and named on the bridge by a Governor, which registration does not imply
-        // (审计反馈 V4 #2).
+        // ...and named on the bridge by a Governor, which registration does not imply.
         if (!bridge.bridgeWhitelisted(from)) {
             vm.prank(governor);
             bridge.setBridgeWhitelisted(from, true);

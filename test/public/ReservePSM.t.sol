@@ -163,7 +163,7 @@ contract ReservePSMTest is Test {
     }
 
     /// @dev Was permissionless, which let anyone front-run an expected assetId, deploy its
-    ///      wrapped token first and install themselves as its controller (Audit Feedback V2 #8).
+    ///      wrapped token first and install themselves as its controller.
     function test_deployWrappedToken_revertsForNonGovernor() public {
         vm.prank(attacker);
         vm.expectRevert(IReservePSM.NotGovernor.selector);

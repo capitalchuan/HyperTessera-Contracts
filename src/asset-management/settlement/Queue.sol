@@ -15,7 +15,7 @@ import {QueueType} from "../../libs/Types.sol";
 ///         Tombstone pattern: cancelled slots are marked with requestId = TOMBSTONE (uint256.max)
 ///         and auto-skipped during dequeue — the queue array is never shifted.
 ///
-///         LP priority is enforced at the Settlement layer, not here. (development-plan §3.2.1, §8)
+///         LP priority is enforced at the Settlement layer, not here.
 contract Queue is IQueue {
     // -----------------------------------------------------------------------
     // Constants
@@ -103,7 +103,7 @@ contract Queue is IQueue {
     function dequeue(address vault, QueueType queueType, uint256[] calldata requestIds) external override {
         // Matches enqueue/remove. Queue storage is keyed per vault, so a forged vault could only
         // ever churn its own empty queue — but the entry points should not disagree about what a
-        // vault is (Audit Feedback V2 #10).
+        // vault is.
         _onlyRegisteredVault(vault);
         _onlySettlement(vault);
 

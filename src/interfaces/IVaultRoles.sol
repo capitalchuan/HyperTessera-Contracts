@@ -7,7 +7,6 @@ pragma solidity 0.8.24;
 ///         BaseAdapter, Settlement, UnifiedPool, NAVOracle). Roles are per-Vault: the same address
 ///         can serve different roles (or none) on different Vaults, and each Vault's Owner
 ///         appoints/replaces its own Curator/Guardian/Allocator/Keeper independently.
-///         (角色权限与职责修改方案 §2, §3, §5)
 interface IVaultRoles {
     event OwnerTransferred(
         address indexed vault, address indexed oldOwner, address indexed newOwner, uint256 timestamp

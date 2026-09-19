@@ -70,8 +70,7 @@ contract LiquidityEarnVaultTest is Test {
         vm.stopPrank();
 
         vm.startPrank(governor);
-        // Governor admission to the bridge, separate from StateManager registration
-        // (审计反馈 V4 #2).
+        // Governor admission to the bridge, separate from StateManager registration.
         bridge.setBridgeWhitelisted(address(lpVault), true);
         bridge.setBridgeWhitelisted(address(cashVault), true);
         lpVault.setCurator(governor); // reused as Curator here too — only used pre-launch below
@@ -593,7 +592,7 @@ contract LiquidityEarnVaultTest is Test {
     }
 
     function test_settle_fifoLandsExactlyOnRedeemGap() public {
-        // Client scenario: 500e6 of Cash-side redeem gap to fund, LP FIFO head is alice 300e6
+        // Scenario: 500e6 of Cash-side redeem gap to fund, LP FIFO head is alice 300e6
         // then bob 400e6. Queue order can't be skipped, so bob is accepted for 200e6 and
         // refunded 200e6, landing the bridged total exactly on the gap.
         uint256 redeemGap = 500e6;

@@ -8,7 +8,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 /// @title RevenuePool
 /// @notice Protocol fee sink. Any Governor-authorised source may deposit fees;
-///         only GOVERNOR_ROLE can sweep funds to a recipient. (development-plan §3.2.1)
+///         only GOVERNOR_ROLE can sweep funds to a recipient.
 ///
 ///         Multi-source: Governor adds/removes authorised source addresses via
 ///         addAuthorizedSource / removeAuthorizedSource, supporting future products.
@@ -31,7 +31,7 @@ contract RevenuePool is IRevenuePool {
     address[] private _authorizedSourceList;
     uint256 public override totalFeesReceived;
 
-    /// @dev Phase 1 interface reservation only (development-plan §7) — no-op, default address(0).
+    /// @dev Interface reservation only — no-op, default address(0).
     address public override yieldStrategy;
 
     // -----------------------------------------------------------------------

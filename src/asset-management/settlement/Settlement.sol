@@ -13,12 +13,11 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /// @title Settlement
-/// @notice Translates the Company's off-chain per-cycle FIFO-prefix selection into on-chain
+/// @notice Translates the off-chain per-cycle FIFO-prefix selection into on-chain
 ///         share mint/burn and USDT movement, behind M-of-N multi-sig and pool-cash conservation.
 ///         Redeem payouts and share pricing are computed entirely on-chain by BaseVault from its
 ///         own per-cycle price snapshot. May serve many Vaults; each Vault's signer set/threshold
 ///         is independent, managed by that Vault's own Owner.
-///         (development-plan §3.4.1, §8 — net settlement conversion; 角色权限与职责修改方案 §9.1)
 contract Settlement is ISettlement {
     using ECDSA for bytes32;
 
@@ -86,7 +85,7 @@ contract Settlement is ISettlement {
             // The FINAL batch settles redemptions only. A subscription accepted at maturity would
             // mint shares against a price struck on wound-down assets and immediately have
             // nothing left to invest in, so those requests stay queued for their owners to cancel
-            // and reclaim (最终周期结算及最终兑付补充修改方案 §七.1, §八).
+            // and reclaim.
             if (instruction.vaultSettlements[i].deposits.length > 0 && sm.isFinalCycle(v)) {
                 revert DepositsNotAllowedInFinalBatch(v);
             }
@@ -289,8 +288,7 @@ contract Settlement is ISettlement {
 
     /// @dev Domain-separated by this contract's own address and the chain id. Without them the
     ///      same instruction hashes identically on every Settlement instance and every chain, so
-    ///      an M-of-N signature set collected for one could be replayed verbatim against another
-    ///      (Audit Feedback V2 #7).
+    ///      an M-of-N signature set collected for one could be replayed verbatim against another.
     function _hashInstruction(SettlementInstruction calldata instruction) internal view returns (bytes32) {
         return keccak256(abi.encode("HT_SETTLEMENT_BATCH", address(this), block.chainid, instruction));
     }

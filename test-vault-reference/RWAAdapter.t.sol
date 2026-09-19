@@ -288,7 +288,7 @@ contract RWAAdapterTest is Test {
     // -----------------------------------------------------------------------
     // RWA exit via the generic Sell Order
     //
-    // The standalone RWA Withdraw order book was deleted on 2026-08-28. It could move RWA out
+    // The standalone RWA Withdraw order book was deleted. It could move RWA out
     // with no payment at all, sidestepping the pay-first rule the Sell Order exists to enforce,
     // and left two order books competing for the same token balance. Everything it did the Sell
     // Order does with the counterparty payment attached.

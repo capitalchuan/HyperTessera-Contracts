@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 /// @title ILiquidityAdapter
 /// @notice LiquidityAdapter-specific additions on top of IAdapter: the Curator-configured
-///         LP→Cash bridge target. (development-plan §3.4.1)
+///         LP→Cash bridge target.
 interface ILiquidityAdapter {
     // -----------------------------------------------------------------------
     // Events

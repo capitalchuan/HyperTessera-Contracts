@@ -141,7 +141,7 @@ contract UnifiedPoolTest is Test {
         vm.prank(vaultOwner);
         pool.addVault(vault);
 
-        // Governor admission (审计反馈 V3 #1/#2): `addVault` is the Vault opting in, these two are
+        // Governor admission: `addVault` is the Vault opting in, these two are
         // the protocol admitting it and trusting the Settlement it points at. Attribution,
         // distribution and note-routing all check both.
         vm.startPrank(governor);
@@ -151,8 +151,7 @@ contract UnifiedPoolTest is Test {
     }
 
     /// @dev Registers the mock in the StateManager stand-in too: every UnifiedPool entry point
-    ///      that takes a `vault` argument now requires it to be a protocol-registered vault
-    ///      (审计反馈 2026-08-17 #1).
+    ///      that takes a `vault` argument now requires it to be a protocol-registered vault.
     /// @dev Repays `amount` into the pool and attributes it all to `v`.
     function _fund(address v, uint256 amount) internal {
         usdt.mint(payer, amount);
@@ -214,7 +213,7 @@ contract UnifiedPoolTest is Test {
     // reinitializeStateManager
     // -----------------------------------------------------------------------
 
-    /// @dev Rebuilds the v3 BSC-Testnet defect: the proxy was initialized with the W1/W2
+    /// @dev Rebuilds the stub-binding defect: the proxy was initialized with the
     ///      `StubStateManager`, which registers no vaults. `MockSM2` with no `registerVault`
     ///      call is behaviourally identical for the one function that matters here.
     /// @dev The stale StateManager knows this vault (otherwise nothing could be configured into
@@ -353,7 +352,7 @@ contract UnifiedPoolTest is Test {
     }
 
     /// @dev Tranche classification is gone: registration keys on the vault address alone, and
-    ///      any number of vaults can be configured (合约修复20260825 §1).
+    ///      any number of vaults can be configured.
     function test_addVault_manyVaults() public {
         (address vault2,) = _makeVault(vaultOwner);
         vm.prank(vaultOwner);
@@ -423,7 +422,7 @@ contract UnifiedPoolTest is Test {
 
     // -----------------------------------------------------------------------
     // repayInterest / repayPrincipal — permissionless deposits into the unattributed pools
-    // (SET-06: no longer credit any vault's pending directly; repayInterestBatch was removed
+    // (they no longer credit any vault's pending directly; repayInterestBatch was removed
     // entirely since attribution is now a separate, per-vault Settlement-Operator-gated step).
     // -----------------------------------------------------------------------
 
@@ -667,7 +666,7 @@ contract UnifiedPoolTest is Test {
     /// @dev `pending[vault]` is a book claim on pool-MANAGED assets, not on the pool's instant
     ///      cash: `operatorTransfer` moving idle cash into an authorised external position
     ///      changes the asset's form without extinguishing the claim, so a cash balance below
-    ///      `totalPending` is expected liquidity waiting (审计报告（一）回复 §1).
+    ///      `totalPending` is expected liquidity waiting.
     function test_operatorTransfer_leavesPendingIntact() public {
         _fund(vault, 1_000e6);
 
@@ -680,7 +679,7 @@ contract UnifiedPoolTest is Test {
 
     /// @dev The gap that leaves: `distribute` used to be the only path that could reduce
     ///      `pending`, so a permanently lost external position stayed in the vault's NAV forever.
-    ///      Impairment is recognised explicitly instead (审计报告一反馈 §1).
+    ///      Impairment is recognised explicitly instead.
     function test_writeDownPending_recognisesPermanentLoss() public {
         _fund(vault, 1_000e6);
 
@@ -707,7 +706,7 @@ contract UnifiedPoolTest is Test {
 
     /// @dev Pool cash must not be routed into one of the vault's own Adapters: the Adapter's
     ///      `realAssets()` and the vault's `pending` would both count it, double-counting it in
-    ///      `grossManagedAssets()` (审计报告一反馈 §1).
+    ///      `grossManagedAssets()`.
     function test_operatorTransfer_rejectsVaultAdapterRecipient() public {
         _fund(vault, 1_000e6);
         address adapter = makeAddr("adapter");
@@ -741,13 +740,12 @@ contract UnifiedPoolTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // operatorTransfer / operatorTransferToRevenuePool — GOVERNOR only (审计反馈 V3 #1)
+    // operatorTransfer / operatorTransferToRevenuePool — GOVERNOR only
     // -----------------------------------------------------------------------
 
     /// @dev These two are the only paths that move cash out of the pool without a matching ledger
     ///      movement, so whoever can call them can drain the shared cash backing every Vault. An
-    ///      Operator key is an online per-Vault signing key; a stolen one must not reach here
-    ///      (审计问题 1/2 回复 §3.5).
+    ///      Operator key is an online per-Vault signing key; a stolen one must not reach here.
     function test_operatorTransfer_revertsForSettlementOperator() public {
         _fund(vault, 1_000e6);
         vm.prank(operator);
@@ -789,12 +787,12 @@ contract UnifiedPoolTest is Test {
         assertEq(usdt.balanceOf(address(revPool)), 250e6);
         assertEq(revPool.totalFeesReceived(), 250e6);
         // Same accounting rule as operatorTransfer: the ledger is a claim on managed assets and
-        // is not debited here (审计报告（一）回复 §1).
+        // is not debited here.
         assertEq(pool.pending(vault), 1_000e6);
     }
 
     // -----------------------------------------------------------------------
-    // Vault whitelist (审计反馈 2026-08-17 #1)
+    // Vault whitelist
     // -----------------------------------------------------------------------
 
     /// @dev The attack the whitelist closes: a contract that self-reports `owner == attacker` and
@@ -832,7 +830,7 @@ contract UnifiedPoolTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Governor admission whitelists (审计反馈 V3 #1/#2)
+    // Governor admission whitelists
     // -----------------------------------------------------------------------
 
     /// @dev The attack: `VaultFactory.deployVault` is permissionless by design, and being built
@@ -840,7 +838,7 @@ contract UnifiedPoolTest is Test {
     ///      of the check. An attacker could register a Vault, point it at a Settlement that named
     ///      them Operator, and from there both drain the shared pool and mint `pending` out of the
     ///      permissionless inflow pool to fake a high-NAV Vault. Creation stays open; admission to
-    ///      the shared pool is what governance now controls (审计问题 1/2 回复 §2).
+    ///      the shared pool is what governance now controls.
     function test_attributePrincipal_revertsForNonWhitelistedVault() public {
         (address rogue, MockVault3 rogueMock) = _makeVault(attacker);
         rogueMock.setSettlement(settlement);
@@ -878,7 +876,7 @@ contract UnifiedPoolTest is Test {
 
     /// @dev A whitelisted Vault may re-point `settlement()` at any time, so checking the Vault
     ///      alone would let it swap in an attacker-controlled Settlement and appoint arbitrary
-    ///      Operators. Both halves are checked on every attribution (审计问题 1/2 回复 §3.3).
+    ///      Operators. Both halves are checked on every attribution.
     function test_attributePrincipal_revertsWhenSettlementNotWhitelisted() public {
         MockSettlement3 rogueSettlement = new MockSettlement3();
         rogueSettlement.setOperator(vault, attacker, true);
@@ -920,8 +918,7 @@ contract UnifiedPoolTest is Test {
     }
 
     /// @dev Inflows stay permissionless: they only add real cash plus an unattributed record, and
-    ///      credit no Vault's pending. The control sits on attribution and outflow instead
-    ///      (审计问题 1/2 回复 §3.2).
+    ///      credit no Vault's pending. The control sits on attribution and outflow instead.
     function test_repayPrincipal_staysPermissionlessForNonWhitelistedPayer() public {
         vm.prank(governor);
         pool.setVaultWhitelisted(vault, false);
@@ -949,8 +946,7 @@ contract UnifiedPoolTest is Test {
     }
 
     /// @dev Several Settlement addresses may be trusted at once, so a new implementation can be
-    ///      rolled out alongside the old one rather than in a flag-day cutover
-    ///      (审计问题 1/2 回复 §3.1).
+    ///      rolled out alongside the old one rather than in a flag-day cutover.
     function test_settlementWhitelist_holdsMultipleAddresses() public {
         MockSettlement3 next = new MockSettlement3();
         vm.prank(governor);

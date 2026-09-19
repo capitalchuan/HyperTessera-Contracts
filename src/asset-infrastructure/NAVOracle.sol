@@ -9,7 +9,7 @@ import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/Signa
 /// @notice Standalone, token-keyed price oracle. Anyone may relay an `updateNAV` write as long as
 ///         it carries the registered signer's EIP-712 signature for that `rwaToken`. No Vault,
 ///         StateManager, or AssetRegistry dependency — RWAAdapter reads this by `rwaToken` address
-///         only (NAVOracle/RWAAdapter redesign spec).
+///         only.
 /// @dev    Downward price moves of any magnitude are accepted; only upward moves are capped at
 ///         `navDeviationMaxBps`. No on-chain staleness check — freshness is an off-chain concern.
 /// @dev    Signatures are checked with `SignatureChecker`, so a registered signer may be either an

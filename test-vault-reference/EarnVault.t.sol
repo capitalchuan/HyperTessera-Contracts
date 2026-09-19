@@ -701,7 +701,7 @@ contract EarnVaultTest is Test {
         _completeCycle();
 
         // Claimable already for the filled third, and the request keeps its queue slot for the
-        // rest (审计反馈 V3 #3). Left unclaimed here so the cumulative-across-cycles assertion
+        // rest. Left unclaimed here so the cumulative-across-cycles assertion
         // below still measures what it always did; the claim-then-claim-again path has its own
         // test further down.
         assertEq(vault.getRedeemRequest(redeemId).settledAssets, _assetsFor(firstChunk));
@@ -899,7 +899,7 @@ contract EarnVaultTest is Test {
     }
 
     function test_settle_cycle0_fifoPrefix_thirdPartial_fourthStaysPending() public {
-        // Client's Cycle 0 example: the queue holds four subscriptions, the batch accepts the
+        // Cycle 0 example: the queue holds four subscriptions, the batch accepts the
         // first two in full, partially fills the third (the marginal request), and simply omits
         // the fourth, which stays PENDING for a later cycle. This is exactly the shape the FIFO
         // prefix rule permits.
@@ -983,8 +983,7 @@ contract EarnVaultTest is Test {
 
     /// @notice The recovery path now works only on the classes that remain eligible — settled
     ///         redemptions and refunds. A deficit driven by PENDING subscriptions cannot be
-    ///         cleared this way at all, because that money is no longer haircuttable
-    ///         (审计报告（一）回复 §2).
+    ///         cleared this way at all, because that money is no longer haircuttable.
     /// @dev Builds the one situation writeDownInsolvency exists for: assets that cannot cover
     ///      even the FIXED claims. Returns the two settled redemption ids, in ascending order.
     function _insolventWithTwoSettledRedeems() internal returns (uint256 idA, uint256 idB) {
@@ -1047,7 +1046,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice The whole point of the redesign: one ratio, computed on-chain, applied to every
-    ///         outstanding settled redemption (0826 最小化修改方案 §四, §五).
+    ///         outstanding settled redemption.
     function test_writeDownInsolvency_appliesOneUniformRatioToEveryClaim() public {
         (uint256 idA, uint256 idB) = _insolventWithTwoSettledRedeems();
 
@@ -1071,7 +1070,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice Ordinary investment losses are out of scope: while the fixed claims are still
-    ///         covered, the loss belongs in NAV and this path must stay shut (§二).
+    ///         covered, the loss belongs in NAV and this path must stay shut.
     function test_writeDownInsolvency_revertsWhenFixedClaimsStillCovered() public {
         (uint256 idA, uint256 idB) = _insolventWithTwoSettledRedeems();
         // Put the money back so the vault is solvent against its fixed claims again.
@@ -1086,7 +1085,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice Omitting a holder is impossible: the submitted originals must sum to the entire
-    ///         outstanding reserved liability (§五).
+    ///         outstanding reserved liability.
     function test_writeDownInsolvency_revertsOnOmittedRequest() public {
         (uint256 idA,) = _insolventWithTwoSettledRedeems();
 
@@ -1117,7 +1116,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice PENDING and REFUNDABLE are protected in full — neither ever bought into the
-    ///         portfolio (§三).
+    ///         portfolio.
     function test_writeDownInsolvency_leavesProtectedClassesWhole() public {
         (uint256 idA, uint256 idB) = _insolventWithTwoSettledRedeems();
         uint256 pendingBefore = vault.pendingDepositLiability();
@@ -1143,8 +1142,8 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice After liquidation the vault only unwinds: no new business, and claimFinal is shut
-    ///         permanently because shares rank behind claims the assets already could not cover
-    ///         (§七). Claiming the haircut redemption still works.
+    ///         permanently because shares rank behind claims the assets already could not cover.
+    ///         Claiming the haircut redemption still works.
     function test_writeDownInsolvency_afterLiquidationOnlyUnwindIsAllowed() public {
         (uint256 idA, uint256 idB) = _insolventWithTwoSettledRedeems();
         _scheduleAndExecute(governor, abi.encodeCall(IBaseVault.writeDownInsolvency, (_toIds(idA, idB))));
@@ -1170,7 +1169,7 @@ contract EarnVaultTest is Test {
     }
 
     // -------------------------------------------------------------------
-    // Partial-fill claiming and post-liquidation exit (审计反馈 V3 #3)
+    // Partial-fill claiming and post-liquidation exit
     // -------------------------------------------------------------------
 
     /// @dev Reproduces the exact trap: alice's redeem is only partially filled and stays QUEUED,
@@ -1223,7 +1222,7 @@ contract EarnVaultTest is Test {
         uint256 gross = vault.grossManagedAssets();
         _simulateLoss(gross - (reserved / 2));
 
-        // The bad timing the audit calls out: liquidate mid-CALCULATING, so the cycle can never
+        // The bad timing: liquidate mid-CALCULATING, so the cycle can never
         // be walked back to ACCEPTING.
         _advanceToCalculating();
         assertEq(uint8(sm.getCycleState(address(vault))), uint8(CycleState.CALCULATING));
@@ -1274,8 +1273,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice A liquidated request with nothing written down to collect still has to be able to
-    ///         release its shares, and the cycle-state gate must not stand in the way
-    ///         (审计问题 3 回复 §三.4).
+    ///         release its shares, and the cycle-state gate must not stand in the way.
     function test_cancelRequest_afterLiquidationIgnoresCycleState() public {
         (uint256 idAlice,, uint256 aliceRemaining) = _insolventWithPartiallyFilledQueuedRedeem();
 
@@ -1289,14 +1287,14 @@ contract EarnVaultTest is Test {
 
         assertEq(vault.balanceOf(alice), sharesBefore + aliceRemaining, "shares released");
         // Cancelling never forfeits cash already owed — the request is promoted to SETTLED and
-        // stays claimable (审计问题 3 回复 §二.5).
+        // stays claimable.
         IBaseVault.RedeemRequest memory req = vault.getRedeemRequest(idAlice);
         assertEq(uint8(req.state), uint8(RedeemRequestState.SETTLED));
         assertGt(req.settledAssets, 0);
         assertGt(_claimRedeemAmount(alice, idAlice), 0, "written-down cash still collectable");
     }
 
-    /// @notice 审计问题 3 回复 §三.4 / 测试要求 8: a liquidated request with **zero** written-down
+    /// @notice A liquidated request with **zero** written-down
     ///         cash — never filled at all — must still be able to release its shares and leave the
     ///         queue. `claimRedeem` has nothing to pay here, so `cancelRequest` is the only exit,
     ///         and its cycle-state gate has to be out of the way for that to work.
@@ -1385,7 +1383,7 @@ contract EarnVaultTest is Test {
 
         assertEq(vault.reservedRedeemLiability(), _assetsFor(firstChunk));
 
-        // 测试要求 11: the cash leaving was already carried as a liability, so paying it out
+        // The cash leaving was already carried as a liability, so paying it out
         // moves neither the Vault's net assets nor the share price.
         uint256 assetsBefore = vault.totalAssets();
         uint256 priceBefore = vault.convertToAssets(1e18);
@@ -1552,7 +1550,7 @@ contract EarnVaultTest is Test {
         vm.prank(alice);
         vault.claimDeposit(rid, alice);
 
-        uint256 yield = 100_000e6; // matches the client's worked example
+        uint256 yield = 100_000e6; // matches the worked example below
         usdt.mint(address(vault), yield);
 
         _advanceToCalculating();
@@ -1561,9 +1559,9 @@ contract EarnVaultTest is Test {
         vm.prank(settlement);
         vault.snapshotSettlementPrice(cycleNumber);
 
-        // Client's worked example: 100_000 USDT profit, 20% fee -> 20_000 Share total,
+        // Worked example: 100_000 USDT profit, 20% fee -> 20_000 Share total,
         // 30% protocol / 70% manager split -> 6_000 / 14_000 Share.
-        // (Exact totalSupply/assets at snapshot time differ from the doc's simplified example, so
+        // (Exact totalSupply/assets at snapshot time differ from the simplified example, so
         // assert the *split ratio* rather than the literal 6_000/14_000 numbers.)
         uint256 revPoolShares = vault.balanceOf(revPool);
         uint256 bobShares = vault.balanceOf(bob);
@@ -1705,7 +1703,7 @@ contract EarnVaultTest is Test {
         p.minRaiseAmount = 100e6;
         // 500e18 shares == 500e6 USDT at the flat 1.0 price this scenario runs at. The cap now
         // travels with the rest of the product parameters and StateManager pushes it into the
-        // vault (募集上限参数调整建议 §2).
+        // vault.
         p.subscriptionCapShare = 500e18;
         sm.setProductParams(address(v), p);
         assertEq(v.subscriptionCapShare(), 500e18);
@@ -1801,7 +1799,7 @@ contract EarnVaultTest is Test {
         _setCapShare(101_000e18);
 
         // One extra wei of USDT mints 1e12 extra shares — a single minimum share unit over the
-        // quota is enough to reject the whole batch (净募集额度修改方案 §四 验收要求).
+        // quota is enough to reject the whole batch.
         uint256 rid = _requestDeposit(bob, 1_000e6 + 1);
         _advanceToCalculating();
 
@@ -1844,7 +1842,7 @@ contract EarnVaultTest is Test {
     /// @notice Performance-fee shares do NOT consume subscription quota. No new money arrives
     ///         behind them, so charging them against the raise ceiling would shrink the product's
     ///         real capacity every time it performed well — the whole point of tracking quota
-    ///         separately from `totalSupply()` (净募集额度修改方案 §一, §四 验收要求 1).
+    ///         separately from `totalSupply()`.
     function test_settle_performanceFeeSharesDoNotConsumeQuota() public {
         uint256 aliceShares = _giveAliceShares(100_000e6);
         _scheduleAndExecute(curator, abi.encodeCall(IBaseVault.setPerformanceFeeRecipient, (bob)));
@@ -1867,7 +1865,7 @@ contract EarnVaultTest is Test {
 
     /// @notice ...and the quota freed by burning fee shares is real: redeeming them releases
     ///         capacity that was never charged, which is why the running total floors at zero
-    ///         instead of underflowing (净募集额度修改方案 §3).
+    ///         instead of underflowing.
     function test_settle_burningFeeSharesReleasesQuotaAndFloorsAtZero() public {
         _giveAliceShares(100_000e6);
         _scheduleAndExecute(curator, abi.encodeCall(IBaseVault.setPerformanceFeeRecipient, (bob)));
@@ -1911,8 +1909,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice A batch that subscribes and redeems in the same cycle is checked on the NET
-    ///         movement, not on the intermediate state after the deposits alone
-    ///         (净募集额度修改方案 §4).
+    ///         movement, not on the intermediate state after the deposits alone.
     function test_settle_capCheckedOnBatchNetNotIntermediate() public {
         uint256 aliceShares = _giveAliceShares(100_000e6);
         _setCapShare(aliceShares); // exactly full: any un-netted deposit would breach
@@ -1933,7 +1930,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice Partial settlement charges only what was actually accepted and minted — the
-    ///         refunded remainder never occupied quota (净募集额度修改方案 §2, §四 验收要求).
+    ///         refunded remainder never occupied quota.
     function test_settle_partialFill_chargesOnlyTheAcceptedPart() public {
         uint256 aliceShares = _giveAliceShares(100_000e6);
         // Room for exactly 1_000e18 more shares.
@@ -1955,7 +1952,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @notice Interest arriving as USDT mints no shares, so it consumes no quota at all — the
-    ///         vault stays settleable at a full cap (净募集额度修改方案 §四 验收要求 1).
+    ///         vault stays settleable at a full cap.
     function test_settle_interestInflowConsumesNoQuota() public {
         uint256 aliceShares = _giveAliceShares(100_000e6);
         _setCapShare(aliceShares); // exactly full
@@ -1997,7 +1994,7 @@ contract EarnVaultTest is Test {
 
     /// @dev The initial cap is set by the Curator in one shot, through
     ///      `StateManager.setProductParams`, which pushes it into the vault — the Curator never
-    ///      calls the vault directly for it (募集上限参数调整建议 §2, §3).
+    ///      calls the vault directly for it.
     function test_initSubscriptionCapShare_setViaProductParams() public {
         EarnVault v = _newConfiguringVault();
         ProductParams memory p = _defaultParams();
@@ -2087,7 +2084,7 @@ contract EarnVaultTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Pause coverage — every value-out and share-movement path (审计反馈 2026-08-17 #4)
+    // Pause coverage — every value-out and share-movement path
     // -----------------------------------------------------------------------
 
     function _pause() internal {
@@ -2205,13 +2202,13 @@ contract EarnVaultTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Insolvency write-down (审计反馈 2026-08-17 #3)
+    // Insolvency write-down
     // -----------------------------------------------------------------------
 
     /// @notice PENDING subscriptions are no longer an eligible write-down target at all. That
     ///         money is unsettled, has minted no shares and never reached an Adapter — it is a
     ///         protected liability its owner may still cancel and be refunded in full, so it must
-    ///         not absorb portfolio losses (审计报告（一）回复 §2). Ordinary losses reach the
+    ///         not absorb portfolio losses. Ordinary losses reach the
     ///         people who actually bear them through NAV instead.
     function test_writeDownInsolvency_cannotTouchPendingDeposits() public {
         _requestDeposit(alice, 1_000e6);
@@ -2248,7 +2245,7 @@ contract EarnVaultTest is Test {
     }
 
     /// @dev Swapping pools with a balance left behind would drop that receivable out of NAV in
-    ///      one step and strand the cash in the old pool (审计反馈 2026-08-17 #6).
+    ///      one step and strand the cash in the old pool.
     function test_setUnifiedPool_revertsWhileOldPoolStillOwesThisVault() public {
         StubPool oldPool = new StubPool();
         StubPool newPool = new StubPool();
@@ -2507,7 +2504,7 @@ contract EarnVaultTest is Test {
 
         vm.prank(governor); // vault's Owner == this pool's expected addVault caller
         pool.addVault(address(vault));
-        vm.startPrank(governor); // and the protocol Governor admitting it (审计反馈 V3 #1/#2)
+        vm.startPrank(governor); // and the protocol Governor admitting it
         pool.setVaultWhitelisted(address(vault), true);
         pool.setSettlementWhitelisted(vault.settlement(), true);
         vm.stopPrank();
@@ -2543,7 +2540,7 @@ contract EarnVaultTest is Test {
     }
 
     // -----------------------------------------------------------------------
-    // Overdue claim registration (Audit Feedback V2 #11)
+    // Overdue claim registration
     // -----------------------------------------------------------------------
 
     function _wireClaimRegistry(uint256 gracePeriod) internal returns (ClaimRegistry reg) {
@@ -2573,7 +2570,7 @@ contract EarnVaultTest is Test {
         vault.recordOverdueClaims(_arr(1));
     }
 
-    /// @dev The audit's actual complaint: `recordClaim`'s `msg.sender == vault` branch was dead
+    /// @dev The actual defect: `recordClaim`'s `msg.sender == vault` branch was dead
     ///      because nothing on-chain ever called it, leaving the backstop register entirely
     ///      dependent on the Curator acting by hand.
     function test_recordOverdueClaims_vaultItselfRecordsUnclaimedDeposit() public {
@@ -2919,7 +2916,7 @@ contract EarnVaultTest is Test {
 
     /// @dev Governance binding is gated to the one VaultFactory wired into StateManager, not
     ///      merely to "not yet bound" — otherwise any non-atomic deploy window lets an attacker
-    ///      front-run the bind with a timelock they control (审计反馈 2026-08-17 #9).
+    ///      front-run the bind with a timelock they control.
     function test_bindGovernance_revertsForNonFactory() public {
         EarnVault fresh =
             new EarnVault("Fresh", "FRSH", address(usdt), address(sm), address(queue), governor, address(0));
@@ -3294,7 +3291,7 @@ contract EarnVaultTest is Test {
 
         // And therefore the insolvency recovery path stays shut. Note the pending deposits are
         // not even an eligible target any more — they are a protected, still-refundable liability
-        // that never reached an Adapter (审计报告（一）回复 §2) — so the shareholders' equity
+        // that never reached an Adapter — so the shareholders' equity
         // absorbing the whole loss is exactly the intended outcome here.
         vm.prank(governor);
         bytes32 id =
@@ -3325,12 +3322,11 @@ contract EarnVaultTest is Test {
 
     // -----------------------------------------------------------------------
     // cancelRequest — which product/cycle phases let an owner withdraw their own
-    // still-open request (合约修改建议0820 补充说明 §1)
+    // still-open request
     // -----------------------------------------------------------------------
 
     /// @dev SETTLING is where the FINAL cycle RUNS: starting it at maturity moves the product
-    ///      into SETTLING and the cycle into CALCULATING in one transaction
-    ///      (最终周期结算及最终兑付补充修改方案 §四.1).
+    ///      into SETTLING and the cycle into CALCULATING in one transaction.
     function _advanceToSettling() internal {
         ProductParams memory p = sm.getParams(address(vault));
         if (block.timestamp < p.maturityTimestamp) vm.warp(p.maturityTimestamp);
@@ -3471,7 +3467,7 @@ contract EarnVaultTest is Test {
 
     /// @notice Cancelling stays closed for the whole of SETTLING — the final batch may still
     ///         fill the request — and re-opens the moment the final cycle completes into
-    ///         MATURING (最终周期结算及最终兑付补充修改方案 §十).
+    ///         MATURING.
     function test_cancel_revertsThroughoutSettling_reopensInMaturing() public {
         _seedFirstCycle();
         uint256 rid = _requestDeposit(alice, 1_000e6);
@@ -3604,7 +3600,7 @@ contract EarnVaultTest is Test {
     }
 
     // -------------------------------------------------------------------
-    // 审计反馈 V4 #5 — a liquidation must not lock PENDING subscriptions in
+    // A liquidation must not lock PENDING subscriptions in
     // -------------------------------------------------------------------
 
     /// @dev Reproduces the wedge exactly: liquidate while the cycle is CALCULATING, with a
@@ -3725,7 +3721,7 @@ contract EarnVaultTest is Test {
         assertEq(a.totalSupply(), 1_000e6, "vault is the only holder");
     }
 
-    /// @notice The defect the auditor reported. ERC-4626's virtual-share math makes the last unit
+    /// @notice The defect: ERC-4626's virtual-share math makes the last unit
     ///         unreachable from both directions once the Adapter is in profit, so the exact-zero
     ///         gate on `removeAdapter` can never be satisfied by recall alone.
     function test_erc4626Residue_recallAloneCanNeverEmptyAProfitableAdapter() public {
@@ -3866,8 +3862,8 @@ contract EarnVaultTest is Test {
         a.windDownToVault();
     }
 
-    /// @notice Why `writeDownInsolvency` must NOT gain a `cs == ACCEPTING` precondition
-    ///         (审计反馈 V4 #5 附带建议，未采纳). This pins the state that makes that gate
+    /// @notice Why `writeDownInsolvency` must NOT gain a `cs == ACCEPTING` precondition.
+    ///         This pins the state that makes that gate
     ///         unsafe: the vault is insolvent, the cycle is CALCULATING, and the only writer that
     ///         returns the cycle to ACCEPTING is unreachable — so gating the recovery path on
     ///         ACCEPTING would make it unreachable in exactly the case it exists for.

@@ -4,9 +4,9 @@ pragma solidity 0.8.24;
 /// @title IAdapter
 /// @notice Vault's execution + position-ledger + valuation module. Curator authorizes buy/sell
 ///         intent (amount/destination/settlement mode); Allocator executes exactly as authorized
-///         (orderId only — no amount/destination discretion). (development-plan §3.4.1)
+///         (orderId only — no amount/destination discretion).
 ///
-///         Two order books, not three. The Rebalance book was removed on 2026-08-28: it was only
+///         Two order books, not three. The Rebalance book was removed: it was only
 ///         ever `source -> Adapter -> destination` in USDT, needed `source` to have approved this
 ///         Adapter (impossible for an external counterparty or most contracts), created a new
 ///         Deal without retiring the old one, and had none of the minimum-output or deadline

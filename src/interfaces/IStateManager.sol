@@ -6,7 +6,6 @@ import {ProductState, CycleState, PauseState, StateContext, ProductParams, Modul
 /// @title IStateManager
 /// @notice External surface of the three-layer product state machine.
 ///         All vault / Settlement / Keeper lifecycle interactions flow through here.
-///         (development-plan §3.3.1)
 interface IStateManager {
     // -----------------------------------------------------------------------
     // Events
@@ -194,7 +193,7 @@ interface IStateManager {
     function accessControl() external view returns (address);
 
     /// @notice The one VaultFactory allowed to register vaults. Each Vault reads this to gate
-    ///         its own one-shot `bindGovernance`. (审计反馈 2026-08-17 #9)
+    ///         its own one-shot `bindGovernance`.
     function vaultFactory() external view returns (address);
 
     // -----------------------------------------------------------------------

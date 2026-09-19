@@ -7,7 +7,7 @@ import {FeePaymentKind, CreationFeeAction} from "../libs/Types.sol";
 /// @notice Interface for the HyperTessera RWA asset metadata registry.
 ///         Registration is permissionless — any address may register an asset and becomes its owner.
 ///         Each asset receives a sequential `uint256` identifier (starting at 1) and a dedicated
-///         RWAToken ERC-20 deployed on registration. (development-plan §3.2.1, revised 2026-06-22/25)
+///         RWAToken ERC-20 deployed on registration.
 interface IAssetRegistry {
     // -----------------------------------------------------------------------
     // Types
@@ -88,7 +88,6 @@ interface IAssetRegistry {
     /// @dev    Permissionless — msg.sender becomes the asset owner (and that asset's Issuer for
     ///         MintBurnController purposes). Calls MintBurnController.registerToken(assetId, token)
     ///         and wires the controller directly into the deployed RWAToken.
-    ///         (plan §3.2.1, revised 2026-06-22/25; 角色权限与职责修改方案 §11.2)
     /// @param metadataHash keccak256 of the off-chain deal/legal document.
     /// @param name         ERC-20 name for the deployed RWAToken.
     /// @param symbol       ERC-20 symbol for the deployed RWAToken.
@@ -156,7 +155,7 @@ interface IAssetRegistry {
     function nextAssetId() external view returns (uint256);
 
     /// @notice Address of the MintBurnController this Registry deployed at construction —
-    ///         immutable, always non-zero, no setter. (角色权限与职责修改方案 §11.2, G-06)
+    ///         immutable, always non-zero, no setter.
     function mintBurnController() external view returns (address);
 
     /// @notice Address of the wired ProtocolFeeConfig used to gate registerAsset's creation fee.

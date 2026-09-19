@@ -34,7 +34,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 ///           DEPLOY_PROFILE   demo (default) | production
 ///           TEST_PK / PRIVATE_KEY  deployer key; required under `production`
 ///           USDT             optional under `demo` (reuses an existing Mock USDT across
-///                            generations so test-wallet balances survive); REQUIRED under
+///                            redeploys so test-wallet balances survive); REQUIRED under
 ///                            `production`, where it must name the real settlement token
 ///           TOKEN_AGENT      demo assets' Token Agent (demo profile only)
 ///           NAV_SIGNER       demo asset's NAV signer (demo profile only)
@@ -78,7 +78,7 @@ contract DeployCore is DeployConfig {
         // Settlement token. Under `demo`, `USDT` may name an already-deployed Mock USDT to carry
         // across a redeploy: the token is a standalone ERC-20 with an open `mint` and holds no
         // reference to any protocol contract, so reusing one preserves test-wallet balances
-        // instead of zeroing them for a new generation. Unset deploys a fresh one.
+        // instead of zeroing them on every redeploy. Unset deploys a fresh one.
         usdt = MockUSDT(_settlementToken());
         revenuePool = new RevenuePool(address(usdt), address(ac));
 
@@ -108,7 +108,7 @@ contract DeployCore is DeployConfig {
     }
 
     /// @dev Everything in here exists so a testnet has something to click on. None of it is
-    ///      deployed under the `production` profile: the client registers their own assets
+    ///      deployed under the `production` profile: each issuer registers its own assets
     ///      through `AssetRegistry`, and `StubStateManager` plus the Queue bound to it are
     ///      superseded by the vaults stage's real StateManager and Queue.
     function _deployDemoAssets() internal {

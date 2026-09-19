@@ -10,17 +10,17 @@ import {IAssetRegistry} from "../interfaces/IAssetRegistry.sol";
 ///
 ///         No ERC-1644 forced transfer. A `controllerTransfer` entry point existed but was
 ///         unreachable on-chain — it was gated on the MintBurnController, and that contract
-///         exposes no function that would ever call it. The client flow spec has no forced
-///         transfer requirement, so it was removed on 2026-08-17 rather than completed.
+///         exposes no function that would ever call it. The product has no forced
+///         transfer requirement, so it was removed rather than completed.
 ///
 ///         Transfer path restriction: up to 10 rules; each rule permits transfers from any address
 ///         in `fromListId` to any address in `toListId`. Whitelist admission (who may hold) and
 ///         transfer path direction (who may send to whom) are two independent switches, both
 ///         defaulting to false/open. This asset's Issuer (its AssetRegistry owner) manages paths and lists;
 ///         the MintBurnController is fixed at deploy time by AssetRegistry — no setter, no
-///         Governor involvement. (角色权限与职责修改方案 §11.4, §12.12)
+///         Governor involvement.
 ///
-///         One contract is deployed per assetId by AssetRegistry.registerAsset. (development-plan §3.2.1)
+///         One contract is deployed per assetId by AssetRegistry.registerAsset.
 contract RWAToken is IRWAToken {
     // -----------------------------------------------------------------------
     // Immutable state
@@ -48,7 +48,7 @@ contract RWAToken is IRWAToken {
     address public immutable override mintBurnController;
 
     // -----------------------------------------------------------------------
-    // Transfer path state (development-plan §3.2.1)
+    // Transfer path state
     // -----------------------------------------------------------------------
 
     /// @dev Fixed-size array avoids dynamic-array storage overhead; up to 10 active paths.

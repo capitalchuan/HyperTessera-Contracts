@@ -227,7 +227,7 @@ contract LiquidityAdapterTest is Test {
         lpEarnVault.setAdapter(address(otherAdapter));
     }
 
-    /// @dev 审计反馈 V3 #4: the single-adapter guard reads `adapter`, which only `setAdapter`
+    /// @dev The single-adapter guard reads `adapter`, which only `setAdapter`
     ///      used to write. Coming in through the inherited `addAdapter` therefore left the guard
     ///      unarmed, and adapters could be appended one after another — each one's `realAssets()`
     ///      feeding `grossManagedAssets()` — right up until someone got round to `setAdapter`.

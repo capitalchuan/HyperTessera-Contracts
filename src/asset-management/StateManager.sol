@@ -17,7 +17,6 @@ import {
 
 /// @title StateManager
 /// @notice Three-layer (Product × Cycle × Pause) state machine for HyperTessera vaults.
-///         (development-plan §3.3.1)
 contract StateManager is IStateManager {
     // -----------------------------------------------------------------------
     // Storage
@@ -32,13 +31,11 @@ contract StateManager is IStateManager {
     /// @dev True while this vault's FINAL cycle is running, i.e. for the whole of
     ///      SETTLING/CALCULATING. Set atomically with the move into SETTLING and cleared by the
     ///      final `completeCycle` as it moves the product to MATURING, so it is exactly the
-    ///      window in which a final settlement batch may execute
-    ///      (最终周期结算及最终兑付补充修改方案 §三, §八).
+    ///      window in which a final settlement batch may execute.
     mapping(address vault => bool) private _finalCycleActive;
 
     /// @dev Set by `setProductParams`. `openSubscription` requires it, so a Curator who never
-    ///      configured the product cannot open a raise against an all-zero parameter set
-    ///      (审计反馈 2026-08-17 #8).
+    ///      configured the product cannot open a raise against an all-zero parameter set.
     mapping(address vault => bool) private _paramsSet;
     mapping(ModuleId => bool) private _modulePaused;
 
@@ -108,8 +105,7 @@ contract StateManager is IStateManager {
     /// @dev The initial state is fixed here rather than taken from the factory's calldata. The
     ///      "single-direction from CONFIGURING" invariant — and the several call sites that
     ///      implicitly depend on `cycle == ACCEPTING` during SUBSCRIBING (cancelRequest, above
-    ///      all) — must not be defeatable by a caller passing something else
-    ///      (审计反馈 2026-08-17 #7).
+    ///      all) — must not be defeatable by a caller passing something else.
     function registerVault(address vault) external {
         if (msg.sender != vaultFactory) revert NotVaultFactory();
         if (vault == address(0)) revert ZeroAddress();
@@ -145,8 +141,7 @@ contract StateManager is IStateManager {
         // The vault, not this contract, is the authority on the live subscription cap — settle()
         // reads its own `subscriptionCapShare`. Curator sets the initial value here, in one
         // transaction with the rest of the product parameters, and this pushes it across; any
-        // later change goes through that vault's VaultTimelock instead
-        // (募集上限参数调整建议 §2, §3).
+        // later change goes through that vault's VaultTimelock instead.
         IBaseVault(vault).initSubscriptionCapShare(params.subscriptionCapShare);
 
         emit ProductParamsSet(vault, block.timestamp);
@@ -156,7 +151,7 @@ contract StateManager is IStateManager {
     ///      all" is caught by `_paramsSet` in `openSubscription` rather than here, so
     ///      `subscriptionStart == 0` stays legal — it means "open as soon as the Keeper calls".
     ///      `walletSubscriptionCap`, `subscriptionCapShare`, `minRaiseAmount` and `feeParams` are
-    ///      likewise legitimately 0 (uncapped / no minimum). (审计反馈 2026-08-17 #8)
+    ///      likewise legitimately 0 (uncapped / no minimum).
     function _validateParams(ProductParams calldata p) internal pure {
         if (p.subscriptionEnd <= p.subscriptionStart) revert InvalidProductParams("subscriptionEnd");
         if (p.cycleDuration == 0) revert InvalidProductParams("cycleDuration");
@@ -169,8 +164,7 @@ contract StateManager is IStateManager {
     // Subscription tracking
     // -----------------------------------------------------------------------
 
-    /// @dev WHAT `_totalSubscribed` / `_subscribedByWallet` MEAN, and for how long
-    ///      (合约修改20260824 —— 统一记账边界).
+    /// @dev WHAT `_totalSubscribed` / `_subscribedByWallet` MEAN, and for how long.
     ///
     ///      They are a **subscription-window declaration tally**, not a record of principal
     ///      actually subscribed. Three properties follow, and they are deliberate:
@@ -216,8 +210,7 @@ contract StateManager is IStateManager {
         if (msg.sender != vault) revert Unauthorized();
         // Symmetric with recordSubscription's gate. The ledger only ever accrues during
         // SUBSCRIBING, so releasing outside it (an OPERATING-phase cancel) would subtract an
-        // amount that was never added and drive the raise tally below its true total
-        // (审计反馈 2026-08-17 #5).
+        // amount that was never added and drive the raise tally below its true total.
         if (_states[vault].product != ProductState.SUBSCRIBING) return;
 
         uint256 totalSub = _totalSubscribed[vault];
@@ -290,8 +283,7 @@ contract StateManager is IStateManager {
         // Keeping them separate is the whole point: cycle 0's initial settlement completes at
         // some arbitrary point after subscriptionEnd, so every later cycle boundary is offset by
         // that delay, and a one-year product whose cycleDuration is also one year would otherwise
-        // reach maturity with its last cycle not yet due — and skip its final settlement entirely
-        // (一年期产品最终周期结算与产品参数调整说明 §5.2).
+        // reach maturity with its last cycle not yet due — and skip its final settlement entirely.
         bool maturityDue = block.timestamp >= p.maturityTimestamp;
         if (!maturityDue && block.timestamp < _cycleStart[vault] + p.cycleDuration) {
             revert ConditionNotMet("cycleDuration not elapsed");
@@ -306,8 +298,7 @@ contract StateManager is IStateManager {
         // freezes its queues. Running the final cycle from SETTLING/CALCULATING — rather than
         // finishing it in OPERATING and only then moving — means there is never a moment where
         // the product reads OPERATING with no cycle to execute, or where a cycle is running while
-        // the product still admits new business
-        // (最终周期结算及最终兑付补充修改方案 §四.1).
+        // the product still admits new business.
         if (maturityDue) _beginFinalCycle(s, vault);
     }
 
@@ -370,8 +361,7 @@ contract StateManager is IStateManager {
             // This was the final cycle. Its price is now frozen and the product moves to MATURING
             // in the same transaction — SETTLING has exactly one legal exit, and it runs through
             // a completed final cycle. ACCEPTING here is just the resting cycle state: no new
-            // cycle can start, because startCycleCalculation requires OPERATING
-            // (最终周期结算及最终兑付补充修改方案 §九).
+            // cycle can start, because startCycleCalculation requires OPERATING.
             _finalCycleActive[vault] = false;
             emit ProductStateChanged(vault, ProductState.SETTLING, ProductState.MATURING, block.timestamp);
             s.product = ProductState.MATURING;
@@ -383,8 +373,7 @@ contract StateManager is IStateManager {
         // outstanding — using that snapshot as the final one would lock in book value instead of
         // what was actually recovered, and would retroactively repurpose a batch its signers
         // approved as a routine cycle. Instead the product moves straight into SETTLING and opens
-        // a fresh final cycle, which prices only after the assets are actually back
-        // (最终周期结算及最终兑付补充修改方案 §四.2).
+        // a fresh final cycle, which prices only after the assets are actually back.
         if (s.product == ProductState.OPERATING && block.timestamp >= _params[vault].maturityTimestamp) {
             _beginFinalCycle(s, vault);
             emit CycleStateChanged(vault, CycleState.ACCEPTING, CycleState.CALCULATING, cn + 1, block.timestamp);

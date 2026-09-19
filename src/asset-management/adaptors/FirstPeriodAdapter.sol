@@ -7,7 +7,7 @@ import {BaseAdapter} from "./BaseAdapter.sol";
 
 /// @title FirstPeriodAdapter
 /// @notice Concrete BaseAdapter for the Cash and Note EarnVaults — realAssets() uses BaseAdapter's
-///         default (idle balance plus the sum of live pendingDeposits). (development-plan §3.4.1)
+///         default (idle balance plus the sum of live pendingDeposits).
 contract FirstPeriodAdapter is BaseAdapter {
     using SafeERC20 for IERC20;
 
@@ -16,7 +16,7 @@ contract FirstPeriodAdapter is BaseAdapter {
     ///         Adapter's investments are whatever the Curator has bought into, so the sellable set
     ///         has to be configurable. It is still an explicit allowlist rather than "any token":
     ///         BaseAdapter must never let a Sell Order become a way to move an arbitrary token out
-    ///         of an Adapter (Adapter 方案 §五).
+    ///         of an Adapter.
     ///
     ///         A VALUE_RETURN investment has no on-chain token at all. Those exit with
     ///         `exitAsset == address(0)`, which touches nothing here — only the linked Deal value

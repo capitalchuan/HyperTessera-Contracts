@@ -4,9 +4,9 @@ pragma solidity 0.8.24;
 /// @title IRWAToken
 /// @notice Interface for a per-asset ERC-20 RWA token with ERC-1400 lightweight subset:
 ///         ERC-1594 (controller mint/burn) + transfer path restriction.
-///         ERC-1644 forced transfer is deliberately not supported (removed 2026-08-17: the
-///         entry point was unreachable and the client flow spec requires no forced transfer).
-///         One contract is deployed per assetId by AssetRegistry.registerAsset. (development-plan §3.2.1)
+///         ERC-1644 forced transfer is deliberately not supported (removed: the
+///         entry point was unreachable and the product requires no forced transfer).
+///         One contract is deployed per assetId by AssetRegistry.registerAsset.
 interface IRWAToken {
     // -----------------------------------------------------------------------
     // Types

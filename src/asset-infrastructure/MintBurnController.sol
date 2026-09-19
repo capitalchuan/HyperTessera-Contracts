@@ -11,7 +11,6 @@ import {IAssetRegistry} from "../interfaces/IAssetRegistry.sol";
 ///         owner (no separate global role); the Token Agent is appointed by that same owner via
 ///         `setTokenAgent`. Resolves the target RWAToken contract per-assetId from AssetRegistry,
 ///         supporting the one-contract-per-asset design.
-///         (development-plan §3.2.1, v3.2 §5.4, §3.1 #15; 角色权限与职责修改方案 §11.3)
 ///
 ///         Flow: (1) Issuer calls initiate{Mint,Burn} → stores un-approved request;
 ///         (2) Token Agent calls approve{Mint,Burn} → marks approved+executed and calls

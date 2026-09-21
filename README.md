@@ -4,8 +4,8 @@ Public Solidity contracts for **HyperTessera Earn**, an on-chain structured-yiel
 by real-world-asset (RWA) returns. Product tranches are ERC-4626 + ERC-7540 vaults. Off-chain
 processes coordinate each cycle, and the contracts in this repository settle it on-chain.
 
-This repository publishes the asset infrastructure, settlement, adapter, wrapped-asset and
-governance layers, together with every interface and shared data structure. The Vault
+This repository publishes the asset infrastructure, settlement, adapter, wrapped-asset,
+governance and compliance layers, together with every interface and shared data structure. The Vault
 implementations are closed source (see [Closed-source Vault scope](#closed-source-vault-scope)).
 
 > **This repository does not contain `BaseVault`, `EarnVault`, `LiquidityEarnVault`,
@@ -26,6 +26,7 @@ implementations are closed source (see [Closed-source Vault scope](#closed-sourc
 | Liquidity bridge | `LiquidityBridge` | `src/asset-management/vaults/LiquidityBridge.sol` |
 | Wrapped assets | `WrappedAsset`, `ReservePSM` | `src/wrapped-assets/` |
 | Governance and permissions | `HyperAccessControl`, `VaultTimelock` | `src/governance/` |
+| Compliance | `KYTDepositGateway` | `src/compliance/` |
 | Interfaces | Every interface, including the Vault interfaces (`IBaseVault`, `IEarnVault`, `IVaultFactory`, `IVaultRoles`) and the deposit gate hook (`IGate`) | `src/interfaces/` |
 | Shared data structures | `Types`, `Constants` | `src/libs/` |
 
@@ -55,6 +56,10 @@ A short description of each:
   them on unwrap.
 - **HyperAccessControl** is the protocol-global Governor role registry. **VaultTimelock** delay-
   queues Owner- and Curator-class parameter changes for one Vault.
+- **KYTDepositGateway** is an optional pre-deposit address-screening (KYT) gate for one Vault.
+  Installed as the Vault's `IGate`, it records each subscription, waits for an off-chain screening
+  verdict from its oracle account, and executes the deposit in the same transaction as a pass.
+  With the gate removed, subscriptions go straight to the Vault.
 
 ## Closed-source Vault scope
 
@@ -89,8 +94,8 @@ lib/                     forge-std and OpenZeppelin Contracts (git submodules)
 
 `test-vault-reference/` holds the tests that deploy a real `EarnVault`, `LiquidityEarnVault` or
 `VaultFactory` as part of their fixture. That includes some suites for public modules
-(`Settlement`, the adapters, `LiquidityBridge`, `VaultTimelock`) whose scenarios run through a
-live Vault. They are published so the Vault's external behaviour and test requirements can be
+(`Settlement`, the adapters, `LiquidityBridge`, `VaultTimelock`, `KYTDepositGateway`) whose
+scenarios run through a live Vault. They are published so the Vault's external behaviour and test requirements can be
 read. They cannot compile here because the Vault sources are absent, so they sit outside every
 directory Foundry compiles. See [`test-vault-reference/README.md`](test-vault-reference/README.md).
 

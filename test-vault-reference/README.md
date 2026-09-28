@@ -20,10 +20,11 @@ implementation is tested against. They are not a runnable suite.
 | `BaseAdapter.t.sol`, `RWAAdapter.t.sol`, `LiquidityAdapter.t.sol` | Adapters bound to a live Vault |
 | `LiquidityBridge.t.sol` | `LiquidityBridge` between two live Vaults |
 | `VaultTimelock.t.sol` | `VaultTimelock` bound to a live Vault |
+| `KYTDepositGateway.t.sol` | `KYTDepositGateway` fronting a live Vault's subscription path |
 | `DeployVault.t.sol`, `DeployVaultInputs.t.sol` | Wiring and inputs of the closed Vault deployment stage |
 
-`Settlement`, the adapters, `LiquidityBridge` and `VaultTimelock` are public contracts, but every
-scenario in their suites runs through a Vault, so the suites live here.
+`Settlement`, the adapters, `LiquidityBridge`, `VaultTimelock` and `KYTDepositGateway` are public
+contracts, but every scenario in their suites runs through a Vault, so the suites live here.
 
 The imports resolve from this directory as they stand. With the Vault sources in
 `src/asset-management/vaults/` and, for the deployment tests, `script/deploy/DeployVault.s.sol`,
